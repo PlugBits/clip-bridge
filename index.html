@@ -253,14 +253,14 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && currentRoom) {
     if (!channel || channel.state !== 'joined') {
       setStatus('waiting', '再接続中...');
-      joinRoom();
+      joinRoom(currentRoom);
     }
   }
 });
 
 // ---- ルーム参加 ----
-async function joinRoom() {
-  const roomId = document.getElementById('room-input').value.trim();
+async function joinRoom(forceRoomId) {
+  const roomId = forceRoomId || document.getElementById('room-input').value.trim();
   if (!roomId || roomId.length !== 4) { toast('相手の4桁IDを入力してください', 'err'); return; }
   if (channel) { await channel.unsubscribe(); channel = null; }
   currentRoom = roomId;
