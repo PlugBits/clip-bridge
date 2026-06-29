@@ -91,17 +91,37 @@
   #history-wrap { display: none; }
   #history-wrap.open { display: block; }
 
-  .received-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; animation: slideIn 0.2s ease; }
-  .received-item.mine { border-color: var(--accent-dim, #3a4fa8); background: #1a1e33; }
+  .received-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; animation: slideIn 0.2s ease; }
+  .received-item.mine { border-color: #3a4fa8; background: #1a1e33; }
   .received-item.history-item { opacity: 0.75; }
   @keyframes slideIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-  .received-item img { max-width: 100%; max-height: 280px; border-radius: 6px; object-fit: contain; display: block; }
-  .item-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; gap: 6px; flex-wrap: wrap; }
-  .item-time { font-size: 11px; color: var(--muted); }
-  .item-badge { font-size: 10px; border-radius: 4px; padding: 2px 6px; }
+
+  /* 折りたたみヘッダー行 */
+  .item-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; cursor: pointer; user-select: none;
+    min-height: 42px;
+  }
+  .item-header:hover { background: rgba(255,255,255,0.03); }
+  .item-time { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+  .item-badge { font-size: 10px; border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
   .badge-mine    { color: var(--accent); background: rgba(91,127,255,0.15); }
   .badge-history { color: var(--muted);  background: var(--surface); border: 1px solid var(--border); }
-  .received-text { font-size: 14px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+  .item-preview {
+    flex: 1; font-size: 13px; color: var(--muted);
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0;
+  }
+  .item-preview.has-text { color: var(--text); }
+  .item-actions-inline { display: flex; gap: 4px; flex-shrink: 0; }
+  .item-chevron { font-size: 10px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
+  .item-chevron.open { transform: rotate(180deg); }
+
+  /* 展開コンテンツ */
+  .item-body { display: none; padding: 0 12px 12px; }
+  .item-body.open { display: block; }
+  .item-body img { max-width: 100%; max-height: 280px; border-radius: 6px; object-fit: contain; display: block; margin-bottom: 8px; }
+  .item-body-text { font-size: 14px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; margin-bottom: 8px; }
+  .item-thumb { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
   .actions { display: flex; gap: 5px; flex-wrap: wrap; }
 
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 9px 18px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; white-space: nowrap; z-index: 999; }
@@ -132,6 +152,7 @@
   <div class="join-block">
     <input class="join-input" id="room-input" placeholder="相手のID" maxlength="4" inputmode="numeric">
     <button class="btn btn-primary" onclick="joinRoom()" style="width:100%">参加</button>
+    <button class="btn btn-danger" id="btn-leave" onclick="leaveRoom()" style="width:100%;display:none">切断して履歴削除</button>
   </div>
   <div class="status-bar">
     <div class="dot" id="status-dot"></div>
@@ -255,6 +276,7 @@ async function joinRoom() {
     if (status === 'SUBSCRIBED') {
       setStatus('online', 'ルーム ' + roomId + ' に接続中');
       if (pendingData) document.getElementById('btn-send').disabled = false;
+      document.getElementById('btn-leave').style.display = '';
       toast('接続しました ✓', 'ok');
     } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
       setStatus('error', '切断されました');
@@ -418,50 +440,104 @@ async function sendContent() {
 function addToReceiveList(data, isHistory, isMine) {
   const ts   = data.ts ? new Date(data.ts) : new Date();
   const time = ts.toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  const isImg = data.type === 'image';
 
   const item = document.createElement('div');
   item.className = 'received-item' + (isHistory ? ' history-item' : '') + (isMine ? ' mine' : '');
 
-  if (data.type === 'image') {
-    const img = document.createElement('img');
-    img.src = data.data;
-    item.appendChild(img);
-  } else {
-    const p = document.createElement('div');
-    p.className = 'received-text';
-    p.textContent = data.data;
-    item.appendChild(p);
+  // ---- ヘッダー行（折りたたみ制御） ----
+  const header = document.createElement('div');
+  header.className = 'item-header';
+
+  // 時刻
+  const timeEl = document.createElement('span');
+  timeEl.className = 'item-time';
+  timeEl.textContent = time;
+  header.appendChild(timeEl);
+
+  // バッジ
+  if (isMine) {
+    const b = document.createElement('span');
+    b.className = 'item-badge badge-mine'; b.textContent = '送信';
+    header.appendChild(b);
+  }
+  if (isHistory) {
+    const b = document.createElement('span');
+    b.className = 'item-badge badge-history'; b.textContent = '履歴';
+    header.appendChild(b);
   }
 
-  const meta = document.createElement('div');
-  meta.className = 'item-meta';
+  // 画像サムネ or テキストプレビュー
+  if (isImg) {
+    const thumb = document.createElement('img');
+    thumb.className = 'item-thumb';
+    thumb.src = data.data;
+    header.appendChild(thumb);
+    const prev = document.createElement('span');
+    prev.className = 'item-preview';
+    prev.textContent = '📷 画像';
+    header.appendChild(prev);
+  } else {
+    const prev = document.createElement('span');
+    prev.className = 'item-preview has-text';
+    prev.textContent = data.data.replace(/
+/g, ' ');
+    header.appendChild(prev);
+    // テキストのインラインコピーボタン
+    const inlineCopy = document.createElement('div');
+    inlineCopy.className = 'item-actions-inline';
+    const cb = mkBtn('コピー', 'btn-ghost btn-sm', (e) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(data.data);
+      toast('コピーしました ✓', 'ok');
+    });
+    inlineCopy.appendChild(cb);
+    header.appendChild(inlineCopy);
+  }
 
-  const left = document.createElement('div');
-  left.style.cssText = 'display:flex;gap:6px;align-items:center;';
-  left.innerHTML = `<span class="item-time">${time}</span>`;
-  if (isMine)    left.innerHTML += `<span class="item-badge badge-mine">送信</span>`;
-  if (isHistory) left.innerHTML += `<span class="item-badge badge-history">履歴</span>`;
+  // 展開矢印
+  const chevron = document.createElement('span');
+  chevron.className = 'item-chevron';
+  chevron.textContent = '▼';
+  header.appendChild(chevron);
 
+  // ---- 展開ボディ ----
+  const body = document.createElement('div');
+  body.className = 'item-body';
+
+  if (isImg) {
+    const img = document.createElement('img');
+    img.src = data.data;
+    body.appendChild(img);
+  } else {
+    const p = document.createElement('div');
+    p.className = 'item-body-text';
+    p.textContent = data.data;
+    body.appendChild(p);
+  }
+
+  // 展開時のアクションボタン
   const actions = document.createElement('div');
   actions.className = 'actions';
-
-  if (data.type === 'text') {
-    actions.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', () => { navigator.clipboard.writeText(data.data); toast('コピーしました ✓', 'ok'); }));
-  } else {
+  if (isImg) {
     if (!isIOS) actions.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', () => copyImage(data.data)));
     actions.appendChild(mkBtn('DL', 'btn-primary btn-sm', () => downloadImage(data.data)));
   }
   actions.appendChild(mkBtn('削除', 'btn-danger btn-sm', () => item.remove()));
+  body.appendChild(actions);
 
-  meta.appendChild(left);
-  meta.appendChild(actions);
-  item.appendChild(meta);
+  // トグル
+  header.addEventListener('click', () => {
+    const open = body.classList.toggle('open');
+    chevron.classList.toggle('open', open);
+  });
+
+  item.appendChild(header);
+  item.appendChild(body);
 
   if (isHistory) {
-    // 履歴エリアに追加（古い順）
     document.getElementById('history-list').appendChild(item);
   } else {
-    // リアルタイムは新着順
     const list  = document.getElementById('receive-list');
     const empty = list.querySelector('.receive-empty');
     if (empty) empty.remove();
@@ -491,6 +567,22 @@ async function copyImage(src) {
 
 function downloadImage(src) {
   const a = document.createElement('a'); a.href = src; a.download = 'clip-' + Date.now() + '.png'; a.click();
+}
+
+async function leaveRoom() {
+  if (!currentRoom) return;
+  // テーブルから該当ルームの履歴を全削除
+  await sb.from('clips').delete().eq('room_id', currentRoom);
+  if (channel) { await channel.unsubscribe(); channel = null; }
+  currentRoom = null;
+  setStatus('waiting', '相手のIDを入力して参加してください');
+  document.getElementById('btn-leave').style.display = 'none';
+  document.getElementById('history-list').innerHTML = '';
+  document.getElementById('history-toggle').style.display = 'none';
+  document.getElementById('history-wrap').classList.remove('open');
+  document.getElementById('receive-list').innerHTML = '<div class="receive-empty">まだ受信していません</div>';
+  document.getElementById('btn-send').disabled = true;
+  toast('切断して履歴を削除しました', 'ok');
 }
 
 function setStatus(state, text) {
