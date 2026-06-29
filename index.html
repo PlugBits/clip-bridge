@@ -16,27 +16,28 @@
   body {
     background: var(--bg); color: var(--text); font-family: var(--font);
     min-height: 100dvh; display: flex; flex-direction: column;
-    align-items: center; padding: 24px 16px 48px;
+    align-items: center; padding: 20px 16px 48px;
   }
   header {
-    width: 100%; max-width: 560px; display: flex;
-    align-items: center; gap: 10px; margin-bottom: 32px;
+    width: 100%; max-width: 520px; display: flex;
+    align-items: center; gap: 10px; margin-bottom: 20px;
   }
   .logo {
-    width: 36px; height: 36px; background: var(--accent);
+    width: 34px; height: 34px; background: var(--accent);
     border-radius: 9px; display: flex; align-items: center;
-    justify-content: center; font-size: 18px; flex-shrink: 0;
+    justify-content: center; font-size: 17px; flex-shrink: 0;
   }
-  h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
   .tagline { font-size: 12px; color: var(--muted); margin-left: auto; }
+
   .card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px;
-    width: 100%; max-width: 560px; margin-bottom: 16px;
+    border-radius: var(--radius); padding: 16px;
+    width: 100%; max-width: 520px; margin-bottom: 12px;
   }
   .card-title {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
   }
   .btn {
     border: none; border-radius: 8px; padding: 10px 16px;
@@ -44,81 +45,108 @@
     transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
   }
   .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
   .btn-danger  { background: #2a1a1a; color: var(--red); border: 1px solid #4a2020; }
+  .btn-sm      { padding: 6px 12px; font-size: 12px; }
 
-  /* 接続 */
-  .room-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
-  .room-id {
-    flex: 1; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 14px; font-size: 22px; font-weight: 700;
-    color: var(--accent); letter-spacing: 0.12em; text-align: center;
-    cursor: pointer; user-select: all;
+  /* --- 接続UI --- */
+  .my-id-block {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
   }
-  .join-row { display: flex; gap: 8px; }
+  .my-id-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .my-id-row { display: flex; align-items: center; gap: 8px; }
+  .my-id-num {
+    font-size: 28px; font-weight: 800; color: var(--accent);
+    letter-spacing: 0.15em; font-variant-numeric: tabular-nums; flex: 1;
+  }
+
+  .join-block { display: flex; gap: 8px; margin-bottom: 10px; }
   .join-input {
     flex: 1; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 14px; font-size: 20px; font-weight: 700;
+    border-radius: 8px; padding: 10px 14px; font-size: 22px; font-weight: 700;
     color: var(--text); letter-spacing: 0.12em; text-align: center; outline: none;
+    transition: border-color 0.15s;
   }
   .join-input:focus { border-color: var(--accent); }
   .join-input::placeholder { color: var(--muted); font-size: 14px; font-weight: 400; letter-spacing: 0; }
+
   .status-bar {
-    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
-    background: var(--surface2); border-radius: 8px; font-size: 13px; margin-top: 12px;
+    display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+    background: var(--surface2); border-radius: 8px; font-size: 13px;
   }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
-  .dot.online  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .dot.online  { background: var(--green); box-shadow: 0 0 5px var(--green); }
   .dot.waiting { background: var(--accent); animation: pulse 1.5s infinite; }
   .dot.error   { background: var(--red); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* タブ */
+  /* --- 送信UI --- */
   .tab-row { display: flex; gap: 6px; margin-bottom: 12px; }
   .tab-row .btn { flex: 1; padding: 8px; }
 
-  /* ドロップゾーン */
-  .drop-zone {
-    border: 2px dashed var(--border); border-radius: 10px; padding: 28px 20px;
-    text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s;
-    min-height: 120px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 8px;
+  /* iOSペースト用の可視textarea */
+  #ios-paste-area {
+    width: 100%; min-height: 80px;
+    background: var(--surface2); border: 2px dashed var(--border);
+    border-radius: 10px; padding: 12px; font-size: 14px; color: var(--text);
+    resize: none; outline: none; font-family: var(--font); line-height: 1.6;
+    transition: border-color 0.15s; display: none;
   }
-  .drop-zone.active { border-color: var(--accent); background: rgba(91,127,255,0.06); }
-  .drop-zone.has-content { border-color: var(--green); background: rgba(62,207,142,0.04); }
-  .drop-icon { font-size: 32px; }
+  #ios-paste-area:focus { border-color: var(--accent); border-style: solid; }
+  #ios-paste-area::placeholder { color: var(--muted); }
+
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 24px 16px;
+    text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    min-height: 100px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+  }
+  .drop-zone.active { border-color: var(--accent); background: rgba(91,127,255,0.05); }
+  .drop-zone.has-content { border-color: var(--green); border-style: solid; background: rgba(62,207,142,0.04); }
+  .drop-icon { font-size: 28px; }
   .drop-hint { font-size: 13px; color: var(--muted); }
   .drop-hint strong { color: var(--text); }
+  .drop-hint-sub { font-size: 11px; color: var(--muted); }
 
+  /* 隠しtextarea（PC用） */
   #paste-trap { position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
-  #preview-wrap { display: none; margin-top: 12px; }
-  #preview-img { max-width: 100%; max-height: 240px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border); display: none; }
-  #preview-text { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-all; max-height: 120px; overflow-y: auto; display: none; }
-  .send-row { display: flex; gap: 8px; margin-top: 12px; }
+  #preview-wrap { display: none; margin-top: 10px; }
+  #preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border); display: none; }
+  #preview-text { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-all; max-height: 100px; overflow-y: auto; display: none; }
+
+  .send-row { display: flex; gap: 8px; margin-top: 10px; }
 
   #direct-input {
-    width: 100%; min-height: 100px; background: var(--surface2); border: 1px solid var(--border);
+    width: 100%; min-height: 90px; background: var(--surface2); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px; font-size: 14px; color: var(--text);
     resize: vertical; outline: none; font-family: var(--font); line-height: 1.6;
   }
   #direct-input:focus { border-color: var(--accent); }
 
-  .receive-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 24px; }
-  .received-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; animation: slideIn 0.2s ease; }
-  @keyframes slideIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-  .received-item img { max-width: 100%; max-height: 320px; border-radius: 6px; object-fit: contain; display: block; cursor: pointer; }
-  .item-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; gap: 8px; }
+  /* --- 受信UI --- */
+  .receive-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px; }
+  .received-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px; margin-bottom: 8px; animation: slideIn 0.2s ease;
+  }
+  .received-item.history { opacity: 0.7; border-style: dashed; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .received-item img { max-width: 100%; max-height: 280px; border-radius: 6px; object-fit: contain; display: block; }
+  .item-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; gap: 6px; flex-wrap: wrap; }
   .item-time { font-size: 11px; color: var(--muted); }
+  .item-badge { font-size: 10px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; }
   .received-text { font-size: 14px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+  .actions { display: flex; gap: 5px; flex-wrap: wrap; }
 
   #toast {
-    position: fixed; bottom: 28px; left: 50%;
+    position: fixed; bottom: 24px; left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 999px; padding: 10px 20px; font-size: 13px; font-weight: 500;
+    border-radius: 999px; padding: 9px 18px; font-size: 13px; font-weight: 500;
     opacity: 0; transition: opacity 0.2s, transform 0.2s;
     pointer-events: none; white-space: nowrap; z-index: 999;
   }
@@ -139,15 +167,21 @@
 
 <!-- 接続カード -->
 <div class="card">
-  <div class="card-title">ルーム</div>
-  <div class="room-row">
-    <div class="room-id" id="my-room" title="タップでコピー">----</div>
-    <button class="btn btn-ghost" onclick="copyRoomId()">IDコピー</button>
+  <div class="card-title">接続</div>
+
+  <div class="my-id-block">
+    <div class="my-id-label">自分のID（相手に伝える）</div>
+    <div class="my-id-row">
+      <div class="my-id-num" id="my-id">----</div>
+      <button class="btn btn-ghost btn-sm" onclick="copyMyId()">コピー</button>
+    </div>
   </div>
-  <div class="join-row">
-    <input class="join-input" id="room-input" placeholder="ルームID（4桁）" maxlength="4" inputmode="numeric">
+
+  <div class="join-block">
+    <input class="join-input" id="room-input" placeholder="相手のID" maxlength="4" inputmode="numeric">
     <button class="btn btn-primary" onclick="joinRoom()">参加</button>
   </div>
+
   <div class="status-bar">
     <div class="dot" id="status-dot"></div>
     <span id="status-text">準備中...</span>
@@ -163,6 +197,9 @@
   </div>
 
   <div id="pane-paste">
+    <!-- iOS用: 可視textarea -->
+    <textarea id="ios-paste-area" placeholder="ここを長押し → 「ペースト」をタップ"></textarea>
+    <!-- PC用: ドロップゾーン -->
     <div class="drop-zone" id="drop-zone"
       onclick="focusPasteTrap()"
       ondragover="onDragOver(event)"
@@ -170,7 +207,7 @@
       ondrop="onDrop(event)">
       <div class="drop-icon">📤</div>
       <div class="drop-hint" id="drop-hint"><strong>クリック → Ctrl+V</strong> または画像をドロップ</div>
-      <div class="drop-hint" style="font-size:11px">iOS: 写真をコピー後ここをタップ →「ペースト」</div>
+      <div class="drop-hint-sub">画像・テキスト対応</div>
     </div>
   </div>
 
@@ -203,56 +240,44 @@ const SUPABASE_URL = 'https://ahrvesmafltdkrcjqfwh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnZlc21hZmx0ZGtyY2pxZndoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDU0MzUsImV4cCI6MjA5ODMyMTQzNX0.omwTTulKmH9WyRgo4AGVKEoAv1f3fzKesSudMFrafRo';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 let channel = null;
 let currentRoom = null;
 let pendingData = null;
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+let myId = null;
 
-// ---- ルーム ----
-function genRoomId() {
-  return String(Math.floor(1000 + Math.random() * 9000));
-}
-
+// ---- 初期化 ----
 window.addEventListener('load', () => {
-  const id = genRoomId();
-  document.getElementById('my-room').textContent = id;
-  setStatus('waiting', 'ルームIDを相手に伝えるか、相手のIDで参加してください');
-});
+  myId = String(Math.floor(1000 + Math.random() * 9000));
+  document.getElementById('my-id').textContent = myId;
+  setStatus('waiting', '相手のIDを入力して参加してください');
 
-function joinRoom() {
-  const roomId = document.getElementById('room-input').value.trim() || document.getElementById('my-room').textContent;
-  if (!roomId || roomId.length !== 4) { toast('4桁のルームIDを入力してください', 'err'); return; }
-  if (channel) { channel.unsubscribe(); channel = null; }
-  currentRoom = roomId;
-  setStatus('waiting', '接続中...');
+  // iOS/iPadは可視textareaを表示、PCはドロップゾーンを表示
+  if (isIOS) {
+    document.getElementById('ios-paste-area').style.display = 'block';
+    document.getElementById('drop-zone').style.display = 'none';
+  }
 
-  channel = sb.channel('clip-' + roomId, {
-    config: { broadcast: { self: false } }
-  });
-
-  channel.on('broadcast', { event: 'clip' }, ({ payload }) => {
-    receiveContent(payload);
-  });
-
-  channel.subscribe((status) => {
-    if (status === 'SUBSCRIBED') {
-      setStatus('online', 'ルーム ' + roomId + ' に参加中');
-      document.getElementById('btn-send').disabled = (pendingData === null);
-      toast('接続しました ✓', 'ok');
-    } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-      setStatus('error', '切断されました');
-      toast('切断されました', 'err');
+  // iOSペーストエリアのpasteイベント
+  document.getElementById('ios-paste-area').addEventListener('paste', (e) => {
+    // まず画像を試みる
+    const items = e.clipboardData ? e.clipboardData.items : [];
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const reader = new FileReader();
+        reader.onload = (ev) => { setPreview('image', ev.target.result); e.target.value = ''; };
+        reader.readAsDataURL(item.getAsFile());
+        return;
+      }
     }
+    // テキストはそのままtextareaに入るので少し待って取得
+    setTimeout(() => {
+      const val = e.target.value;
+      if (val.trim()) { setPreview('text', val); e.target.value = ''; }
+    }, 50);
   });
-}
-
-// 自分のIDで自動参加
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const myId = document.getElementById('my-room').textContent;
-    document.getElementById('room-input').value = myId;
-    joinRoom();
-  }, 300);
 });
 
 // 画面復帰時に再接続
@@ -265,13 +290,70 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-function copyRoomId() {
-  const id = document.getElementById('my-room').textContent;
-  navigator.clipboard.writeText(id);
-  toast('ルームIDをコピーしました', 'ok');
+// ---- ルーム参加 ----
+async function joinRoom() {
+  const roomId = document.getElementById('room-input').value.trim();
+  if (!roomId || roomId.length !== 4) { toast('相手の4桁IDを入力してください', 'err'); return; }
+
+  if (channel) { await channel.unsubscribe(); channel = null; }
+  currentRoom = roomId;
+  setStatus('waiting', '接続中...');
+
+  // 過去1時間のメッセージを取得
+  await loadHistory(roomId);
+
+  // Realtimeチャンネル購読
+  channel = sb.channel('clip-' + roomId, { config: { broadcast: { self: false } } });
+  channel.on('broadcast', { event: 'clip' }, ({ payload }) => {
+    receiveContent(payload, false);
+  });
+  channel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      setStatus('online', 'ルーム ' + roomId + ' に接続中');
+      if (pendingData) document.getElementById('btn-send').disabled = false;
+      toast('接続しました ✓', 'ok');
+    } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+      setStatus('error', '切断されました');
+    }
+  });
 }
 
-// ---- ペースト ----
+// 履歴取得
+async function loadHistory(roomId) {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { data, error } = await sb
+    .from('clips')
+    .select('*')
+    .eq('room_id', roomId)
+    .gte('created_at', oneHourAgo)
+    .order('created_at', { ascending: true });
+
+  if (error || !data || data.length === 0) return;
+
+  const list = document.getElementById('receive-list');
+  const empty = list.querySelector('.receive-empty');
+  if (empty) empty.remove();
+
+  data.forEach(row => {
+    receiveContent({ type: row.type, data: row.data, ts: row.created_at }, true);
+  });
+  toast(data.length + '件の履歴を取得しました', 'ok');
+}
+
+// メッセージをDBに保存
+async function saveToDb(roomId, type, data) {
+  await sb.from('clips').insert({ room_id: roomId, type, data });
+  // 1時間以上古いものを削除
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  await sb.from('clips').delete().eq('room_id', roomId).lt('created_at', oneHourAgo);
+}
+
+function copyMyId() {
+  navigator.clipboard.writeText(myId);
+  toast('IDをコピーしました', 'ok');
+}
+
+// ---- PC用ペースト ----
 const pasteTrap = document.getElementById('paste-trap');
 pasteTrap.addEventListener('paste', (e) => {
   e.preventDefault();
@@ -292,7 +374,7 @@ function focusPasteTrap() {
   pasteTrap.value = '';
   pasteTrap.focus();
   document.getElementById('drop-zone').classList.add('active');
-  document.getElementById('drop-hint').innerHTML = '<strong>Ctrl+V を押してください</strong>（iOS: 長押し → ペースト）';
+  document.getElementById('drop-hint').innerHTML = '<strong>Ctrl+V を押してください</strong>';
   pasteTrap.onblur = () => {
     document.getElementById('drop-zone').classList.remove('active');
     if (!pendingData) document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
@@ -315,25 +397,28 @@ function onDrop(e) {
   }
 }
 
+// ---- プレビュー ----
 function setPreview(type, data) {
   pendingData = { type, data };
-  document.getElementById('drop-zone').classList.add('has-content');
-  document.getElementById('drop-hint').innerHTML = type === 'image' ? '📷 画像をペースト済み' : '📝 テキストをペースト済み';
+  if (!isIOS) {
+    document.getElementById('drop-zone').classList.add('has-content');
+    document.getElementById('drop-hint').innerHTML = type === 'image' ? '📷 画像をペースト済み' : '📝 テキストをペースト済み';
+  }
   document.getElementById('preview-wrap').style.display = '';
   document.getElementById('preview-img').style.display  = type === 'image' ? 'block' : 'none';
   document.getElementById('preview-text').style.display = type === 'text'  ? 'block' : 'none';
   if (type === 'image') document.getElementById('preview-img').src = data;
   else document.getElementById('preview-text').textContent = data;
-  document.getElementById('btn-send').disabled = false;
+  document.getElementById('btn-send').disabled = !currentRoom;
 }
 
 function clearContent() {
   pendingData = null;
-  document.getElementById('drop-zone').classList.remove('has-content', 'active');
-  document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
+  if (!isIOS) {
+    document.getElementById('drop-zone').classList.remove('has-content', 'active');
+    document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
+  }
   document.getElementById('preview-wrap').style.display = 'none';
-  document.getElementById('preview-img').style.display = 'none';
-  document.getElementById('preview-text').style.display = 'none';
   document.getElementById('preview-img').src = '';
   document.getElementById('preview-text').textContent = '';
   document.getElementById('btn-send').disabled = true;
@@ -352,14 +437,16 @@ function switchTab(tab) {
 function onDirectInput() {
   const val = document.getElementById('direct-input').value;
   pendingData = val.trim() ? { type: 'text', data: val } : null;
-  document.getElementById('btn-send').disabled = !pendingData;
+  document.getElementById('btn-send').disabled = !(pendingData && currentRoom);
 }
 
 // ---- 送信 ----
 async function sendContent() {
-  if (!channel) { toast('ルームに参加していません', 'err'); return; }
+  if (!channel || !currentRoom) { toast('接続されていません', 'err'); return; }
   if (!pendingData) { toast('送信するデータがありません', 'err'); return; }
-  await channel.send({ type: 'broadcast', event: 'clip', payload: pendingData });
+  const payload = { ...pendingData, ts: new Date().toISOString() };
+  await channel.send({ type: 'broadcast', event: 'clip', payload });
+  await saveToDb(currentRoom, pendingData.type, pendingData.data);
   toast('送信しました ✓', 'ok');
   clearContent();
   if (document.getElementById('pane-text').style.display !== 'none') {
@@ -368,14 +455,16 @@ async function sendContent() {
 }
 
 // ---- 受信 ----
-function receiveContent(data) {
+function receiveContent(data, isHistory) {
   const list = document.getElementById('receive-list');
   const empty = list.querySelector('.receive-empty');
   if (empty) empty.remove();
 
   const item = document.createElement('div');
-  item.className = 'received-item';
-  const time = new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  item.className = 'received-item' + (isHistory ? ' history' : '');
+
+  const ts = data.ts ? new Date(data.ts) : new Date();
+  const time = ts.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 
   if (data.type === 'image') {
     const img = document.createElement('img');
@@ -390,30 +479,38 @@ function receiveContent(data) {
 
   const meta = document.createElement('div');
   meta.className = 'item-meta';
-  meta.innerHTML = `<span class="item-time">${time}</span>`;
+
+  const left = document.createElement('div');
+  left.style.display = 'flex'; left.style.gap = '6px'; left.style.alignItems = 'center';
+  left.innerHTML = `<span class="item-time">${time}</span>`;
+  if (isHistory) left.innerHTML += `<span class="item-badge">履歴</span>`;
 
   const actions = document.createElement('div');
-  actions.style.cssText = 'display:flex;gap:6px;';
-  const s = 'padding:6px 12px;font-size:12px;';
+  actions.className = 'actions';
+  const s = '';
 
   if (data.type === 'text') {
-    actions.appendChild(mkBtn('コピー', 'btn-ghost', s, () => { navigator.clipboard.writeText(data.data); toast('コピーしました ✓', 'ok'); }));
+    actions.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', s, () => { navigator.clipboard.writeText(data.data); toast('コピーしました ✓', 'ok'); }));
   } else {
-    if (!isIOS) actions.appendChild(mkBtn('コピー', 'btn-ghost', s, () => copyImage(data.data)));
-    actions.appendChild(mkBtn('DL', 'btn-primary', s, () => downloadImage(data.data)));
+    if (!isIOS) actions.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', s, () => copyImage(data.data)));
+    actions.appendChild(mkBtn('DL', 'btn-primary btn-sm', s, () => downloadImage(data.data)));
   }
-  actions.appendChild(mkBtn('削除', 'btn-danger', s, () => item.remove()));
+  actions.appendChild(mkBtn('削除', 'btn-danger btn-sm', s, () => item.remove()));
 
+  meta.appendChild(left);
   meta.appendChild(actions);
   item.appendChild(meta);
-  list.prepend(item);
-  toast(data.type === 'image' ? '画像を受信しました 📷' : 'テキストを受信しました', 'ok');
+
+  if (isHistory) list.appendChild(item);
+  else list.prepend(item);
+
+  if (!isHistory) toast(data.type === 'image' ? '画像を受信しました 📷' : 'テキストを受信しました', 'ok');
 }
 
 function mkBtn(label, cls, style, fn) {
   const b = document.createElement('button');
-  b.className = 'btn ' + cls; b.style.cssText = style; b.textContent = label; b.onclick = fn;
-  return b;
+  b.className = 'btn ' + cls; if (style) b.style.cssText = style;
+  b.textContent = label; b.onclick = fn; return b;
 }
 
 async function copyImage(src) {
@@ -424,10 +521,8 @@ async function copyImage(src) {
     canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
     canvas.getContext('2d').drawImage(img, 0, 0);
     canvas.toBlob(async (blob) => {
-      try {
-        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-        toast('画像をコピーしました ✓', 'ok');
-      } catch { toast('コピー不可。DLを使ってください', 'err'); }
+      try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast('画像をコピーしました ✓', 'ok'); }
+      catch { toast('コピー不可。DLを使ってください', 'err'); }
     }, 'image/png');
   } catch { toast('コピー不可。DLを使ってください', 'err'); }
 }
@@ -450,5 +545,3 @@ function toast(msg, type = 'ok') {
   toastTimer = setTimeout(() => { el.className = ''; }, 2500);
 }
 </script>
-</body>
-</html>
