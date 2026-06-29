@@ -1,6 +1,6 @@
-INFO 2026-06-29T17:17:20.045625Z [httpRequest.requestMethod: OPTIONS] [httpRequest.status: 204] [httpRequest.responseSize: 237 B] [httpRequest.latency: 31 ms] [httpRequest.userAgent: Edg 149.0.0.0] https://drawing-similarity-api-879008144488.us-central1.run.app/analyze
+INFO 2026-06-29T17:43:23.290454Z [httpRequest.requestMethod: OPTIONS] [httpRequest.status: 204] [httpRequest.responseSize: 237 B] [httpRequest.latency: 37 ms] [httpRequest.userAgent: Edg 149.0.0.0] https://drawing-similarity-api-879008144488.us-central1.run.app/analyze
   {
-    "insertId": "6a42a8a000013395c98d3efd",
+    "insertId": "6a42aebb0005065ec3efbf6f",
     "httpRequest": {
       "requestMethod": "OPTIONS",
       "requestUrl": "https://drawing-similarity-api-879008144488.us-central1.run.app/analyze",
@@ -9,218 +9,163 @@ INFO 2026-06-29T17:17:20.045625Z [httpRequest.requestMethod: OPTIONS] [httpReque
       "responseSize": "237",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
       "remoteIp": "47.48.240.251",
-      "serverIp": "34.143.77.2",
-      "latency": "0.031157258s",
+      "serverIp": "34.143.72.2",
+      "latency": "0.037382047s",
       "protocol": "HTTP/1.1"
     },
     "resource": {
       "type": "cloud_run_revision",
       "labels": {
-        "project_id": "drawing-similarity",
-        "revision_name": "drawing-similarity-api-00109-8sp",
         "configuration_name": "drawing-similarity-api",
         "service_name": "drawing-similarity-api",
+        "revision_name": "drawing-similarity-api-00110-wmj",
+        "project_id": "drawing-similarity",
         "location": "us-central1"
       }
     },
-    "timestamp": "2026-06-29T17:17:20.045625Z",
+    "timestamp": "2026-06-29T17:43:23.290454Z",
     "severity": "INFO",
     "labels": {
+      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
       "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
       "gcb-trigger-region": "global",
-      "gcb-build-id": "db74fcf7-7316-4aed-ab42-e8c7c6957b37",
-      "commit-sha": "984d3363fed6566e577e0efe3ff1b2854c5cde8b",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "instanceId": "002f8ffd475c31f1701f644d301600e50ee0d6227c81a9270d7c0d8e47aae448b017a0bccaa90b8494c443f9bef59de695bdca1d56d3603b6214d93285abb536e3d7ca564f7617b685959f53778af766"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Frequests",
-    "trace": "projects/drawing-similarity/traces/cd33b7d4758b1e0c18a188c903677277",
-    "receiveTimestamp": "2026-06-29T17:17:20.134912782Z",
-    "spanId": "5ef634416f191024",
-    "traceSampled": true
-  }
-INFO 2026-06-29T17:17:20.347414Z [httpRequest.requestMethod: POST] [httpRequest.status: 200] [httpRequest.responseSize: 646 B] [httpRequest.latency: 11.59 s] [httpRequest.userAgent: Edg 149.0.0.0] https://drawing-similarity-api-879008144488.us-central1.run.app/analyze
-  {
-    "insertId": "6a42a8ab000e5b77ac56ada6",
-    "httpRequest": {
-      "requestMethod": "POST",
-      "requestUrl": "https://drawing-similarity-api-879008144488.us-central1.run.app/analyze",
-      "requestSize": "280497",
-      "status": 200,
-      "responseSize": "646",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
-      "remoteIp": "47.48.240.251",
-      "serverIp": "34.143.77.2",
-      "latency": "11.590234785s",
-      "protocol": "HTTP/1.1"
-    },
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "configuration_name": "drawing-similarity-api",
-        "project_id": "drawing-similarity",
-        "revision_name": "drawing-similarity-api-00109-8sp",
-        "location": "us-central1",
-        "service_name": "drawing-similarity-api"
-      }
-    },
-    "timestamp": "2026-06-29T17:17:20.347414Z",
-    "severity": "INFO",
-    "labels": {
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "gcb-trigger-region": "global",
-      "gcb-build-id": "db74fcf7-7316-4aed-ab42-e8c7c6957b37",
-      "commit-sha": "984d3363fed6566e577e0efe3ff1b2854c5cde8b",
-      "instanceId": "002f8ffd475c31f1701f644d301600e50ee0d6227c81a9270d7c0d8e47aae448b017a0bccaa90b8494c443f9bef59de695bdca1d56d3603b6214d93285abb536e3d7ca564f7617b685959f53778af766",
+      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
+      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
       "managed-by": "gcp-cloud-build-deploy-cloud-run"
     },
     "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Frequests",
-    "trace": "projects/drawing-similarity/traces/85840ae24e1a62a118a188c903677fc4",
-    "receiveTimestamp": "2026-06-29T17:17:32.074080882Z",
-    "spanId": "ff888d717ee5eef4"
+    "trace": "projects/drawing-similarity/traces/18d1739332168de04e6efad02ac1e416",
+    "receiveTimestamp": "2026-06-29T17:43:23.343904105Z",
+    "spanId": "e8750815f2d0246c",
+    "traceSampled": true
   }
-DEFAULT 2026-06-29T17:17:25.603219Z [ocr] high-dpi render bytes=445860 dpi=250
+DEFAULT 2026-06-29T17:43:28.553856Z [ocr] high-dpi render bytes=445860 dpi=250
   {
     "textPayload": "[ocr] high-dpi render bytes=445860 dpi=250",
-    "insertId": "6a42a8a5000934531f53743f",
+    "insertId": "6a42aec000087380fa1649b1",
     "resource": {
       "type": "cloud_run_revision",
       "labels": {
+        "revision_name": "drawing-similarity-api-00110-wmj",
         "configuration_name": "drawing-similarity-api",
-        "project_id": "drawing-similarity",
-        "revision_name": "drawing-similarity-api-00109-8sp",
-        "location": "us-central1",
-        "service_name": "drawing-similarity-api"
-      }
-    },
-    "timestamp": "2026-06-29T17:17:25.603219Z",
-    "labels": {
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "gcb-build-id": "db74fcf7-7316-4aed-ab42-e8c7c6957b37",
-      "gcb-trigger-region": "global",
-      "commit-sha": "984d3363fed6566e577e0efe3ff1b2854c5cde8b",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "instanceId": "002f8ffd475c31f1701f644d301600e50ee0d6227c81a9270d7c0d8e47aae448b017a0bccaa90b8494c443f9bef59de695bdca1d56d3603b6214d93285abb536e3d7ca564f7617b685959f53778af766"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:17:25.608618317Z"
-  }
-DEFAULT 2026-06-29T17:17:28.748514Z [ocr] locate pass1 raw="```json\n{\""
-  {
-    "textPayload": "[ocr] locate pass1 raw=\"```json\\n{\\\"\"",
-    "insertId": "6a42a8a8000b6be2f92e947a",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
         "service_name": "drawing-similarity-api",
         "location": "us-central1",
-        "revision_name": "drawing-similarity-api-00109-8sp",
-        "project_id": "drawing-similarity",
-        "configuration_name": "drawing-similarity-api"
+        "project_id": "drawing-similarity"
       }
     },
-    "timestamp": "2026-06-29T17:17:28.748514Z",
+    "timestamp": "2026-06-29T17:43:28.553856Z",
     "labels": {
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "instanceId": "002f8ffd475c31f1701f644d301600e50ee0d6227c81a9270d7c0d8e47aae448b017a0bccaa90b8494c443f9bef59de695bdca1d56d3603b6214d93285abb536e3d7ca564f7617b685959f53778af766",
+      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
       "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "commit-sha": "984d3363fed6566e577e0efe3ff1b2854c5cde8b",
-      "gcb-build-id": "db74fcf7-7316-4aed-ab42-e8c7c6957b37",
+      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
+      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
+      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
       "gcb-trigger-region": "global"
     },
     "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:17:28.938960760Z"
+    "receiveTimestamp": "2026-06-29T17:43:28.562371021Z"
   }
-DEFAULT 2026-06-29T17:17:28.748569Z [ocr] locate pass1 no JSON found, fallback to full image
+DEFAULT 2026-06-29T17:43:32.964282Z [ocr] locate pass1 raw="\"MASS\" / \"K"
+  {
+    "textPayload": "[ocr] locate pass1 raw=\"\\\"MASS\\\" / \\\"K\"",
+    "insertId": "6a42aec4000eb6bafb2e46d9",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "project_id": "drawing-similarity",
+        "location": "us-central1",
+        "configuration_name": "drawing-similarity-api",
+        "service_name": "drawing-similarity-api",
+        "revision_name": "drawing-similarity-api-00110-wmj"
+      }
+    },
+    "timestamp": "2026-06-29T17:43:32.964282Z",
+    "labels": {
+      "gcb-trigger-region": "global",
+      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
+      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
+      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
+      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
+      "managed-by": "gcp-cloud-build-deploy-cloud-run"
+    },
+    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-06-29T17:43:33.225223102Z"
+  }
+DEFAULT 2026-06-29T17:43:32.964344Z [ocr] locate pass1 no JSON found, fallback to full image
   {
     "textPayload": "[ocr] locate pass1 no JSON found, fallback to full image",
-    "insertId": "6a42a8a8000b6c192b12a944",
+    "insertId": "6a42aec4000eb6f82e554ff8",
     "resource": {
       "type": "cloud_run_revision",
       "labels": {
         "location": "us-central1",
-        "service_name": "drawing-similarity-api",
         "project_id": "drawing-similarity",
-        "revision_name": "drawing-similarity-api-00109-8sp",
+        "revision_name": "drawing-similarity-api-00110-wmj",
+        "service_name": "drawing-similarity-api",
         "configuration_name": "drawing-similarity-api"
       }
     },
-    "timestamp": "2026-06-29T17:17:28.748569Z",
+    "timestamp": "2026-06-29T17:43:32.964344Z",
     "labels": {
+      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
       "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
+      "gcb-trigger-region": "global",
+      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
       "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "instanceId": "002f8ffd475c31f1701f644d301600e50ee0d6227c81a9270d7c0d8e47aae448b017a0bccaa90b8494c443f9bef59de695bdca1d56d3603b6214d93285abb536e3d7ca564f7617b685959f53778af766",
-      "commit-sha": "984d3363fed6566e577e0efe3ff1b2854c5cde8b",
-      "gcb-build-id": "db74fcf7-7316-4aed-ab42-e8c7c6957b37",
-      "gcb-trigger-region": "global"
+      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300"
     },
     "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:17:28.938960760Z"
+    "receiveTimestamp": "2026-06-29T17:43:33.225223102Z"
   }
-DEFAULT 2026-06-29T17:17:28.748612Z [ocr] pass2 no bbox, using full high-dpi image
+DEFAULT 2026-06-29T17:43:32.964392Z [ocr] pass2 no bbox, using full high-dpi image
   {
     "textPayload": "[ocr] pass2 no bbox, using full high-dpi image",
-    "insertId": "6a42a8a8000b6c448300f357",
+    "insertId": "6a42aec4000eb728d2569db5",
     "resource": {
       "type": "cloud_run_revision",
       "labels": {
-        "location": "us-central1",
         "service_name": "drawing-similarity-api",
-        "project_id": "drawing-similarity",
-        "revision_name": "drawing-similarity-api-00109-8sp",
-        "configuration_name": "drawing-similarity-api"
-      }
-    },
-    "timestamp": "2026-06-29T17:17:28.748612Z",
-    "labels": {
-      "gcb-build-id": "db74fcf7-7316-4aed-ab42-e8c7c6957b37",
-      "gcb-trigger-region": "global",
-      "commit-sha": "984d3363fed6566e577e0efe3ff1b2854c5cde8b",
-      "instanceId": "002f8ffd475c31f1701f644d301600e50ee0d6227c81a9270d7c0d8e47aae448b017a0bccaa90b8494c443f9bef59de695bdca1d56d3603b6214d93285abb536e3d7ca564f7617b685959f53778af766",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:17:28.938960760Z"
-  }
-INFO 2026-06-29T17:17:31.997146Z [httpRequest.requestMethod: GET] [httpRequest.status: 200] [httpRequest.responseSize: 369 B] [httpRequest.latency: 62 ms] [httpRequest.userAgent: Edg 149.0.0.0] https://drawing-similarity-api-879008144488.us-central1.run.app/tags?tenantId=yahatausa
-  {
-    "insertId": "6a42a8ac0000ef4c2b083bb7",
-    "httpRequest": {
-      "requestMethod": "GET",
-      "requestUrl": "https://drawing-similarity-api-879008144488.us-central1.run.app/tags?tenantId=yahatausa",
-      "requestSize": "786",
-      "status": 200,
-      "responseSize": "369",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
-      "remoteIp": "47.48.240.251",
-      "serverIp": "34.143.77.2",
-      "latency": "0.062723131s",
-      "protocol": "HTTP/1.1"
-    },
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
         "configuration_name": "drawing-similarity-api",
+        "revision_name": "drawing-similarity-api-00110-wmj",
         "project_id": "drawing-similarity",
-        "revision_name": "drawing-similarity-api-00109-8sp",
-        "service_name": "drawing-similarity-api",
         "location": "us-central1"
       }
     },
-    "timestamp": "2026-06-29T17:17:31.997146Z",
-    "severity": "INFO",
+    "timestamp": "2026-06-29T17:43:32.964392Z",
+    "labels": {
+      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
+      "managed-by": "gcp-cloud-build-deploy-cloud-run",
+      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
+      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
+      "gcb-trigger-region": "global",
+      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10"
+    },
+    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-06-29T17:43:33.225223102Z"
+  }
+DEFAULT 2026-06-29T17:43:36.572519Z [ocr] pass2 raw="{\"drawingNo\":\"K2054-" extracted={"drawingNo":"","productName":""}
+  {
+    "textPayload": "[ocr] pass2 raw=\"{\\\"drawingNo\\\":\\\"K2054-\" extracted={\"drawingNo\":\"\",\"productName\":\"\"}",
+    "insertId": "6a42aec80008bc6745110e11",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "project_id": "drawing-similarity",
+        "location": "us-central1",
+        "service_name": "drawing-similarity-api",
+        "configuration_name": "drawing-similarity-api",
+        "revision_name": "drawing-similarity-api-00110-wmj"
+      }
+    },
+    "timestamp": "2026-06-29T17:43:36.572519Z",
     "labels": {
       "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "commit-sha": "984d3363fed6566e577e0efe3ff1b2854c5cde8b",
-      "gcb-build-id": "db74fcf7-7316-4aed-ab42-e8c7c6957b37",
+      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
       "gcb-trigger-region": "global",
-      "instanceId": "002f8ffd475c31f1701f644d301600e50ee0d6227c81a9270d7c0d8e47aae448b017a0bccaa90b8494c443f9bef59de695bdca1d56d3603b6214d93285abb536e3d7ca564f7617b685959f53778af766",
+      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
+      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
       "managed-by": "gcp-cloud-build-deploy-cloud-run"
     },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Frequests",
-    "trace": "projects/drawing-similarity/traces/099c393de55493bfbbed89da9868e17c",
-    "receiveTimestamp": "2026-06-29T17:17:32.074080882Z",
-    "spanId": "48c61a567a44325f",
-    "traceSampled": true
+    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-06-29T17:43:36.894649043Z"
   }
