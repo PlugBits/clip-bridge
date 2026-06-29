@@ -275,12 +275,21 @@ function setupConn(c) {
 function onDisconnected() {
   conn = null;
   setStatus('error', '切断されました');
-  document.getElementById('btn-connect').style.display = 'none';
+  document.getElementById('btn-connect').style.display = lastPeerId ? 'none' : '';
   document.getElementById('btn-reconnect').style.display = lastPeerId ? '' : 'none';
   document.getElementById('btn-disconnect').style.display = 'none';
   document.getElementById('btn-send').disabled = true;
   toast('切断されました', 'err');
 }
+
+// 画面復帰時に自動再接続
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (lastPeerId && (!conn || !conn.open)) {
+    setStatus('waiting', '再接続中...');
+    setTimeout(() => reconnect(), 500);
+  }
+});
 
 function connectToPeer() {
   const peerId = document.getElementById('peer-input').value.trim();
@@ -461,7 +470,9 @@ function receiveContent(data) {
     const b = mkBtn('コピー', 'btn-ghost', btnStyle, () => { navigator.clipboard.writeText(data.data); toast('コピーしました ✓', 'ok'); });
     actions.appendChild(b);
   } else {
-    actions.appendChild(mkBtn('コピー', 'btn-ghost', btnStyle, () => copyImageFromSrc(data.data)));
+    if (!isIOS) {
+      actions.appendChild(mkBtn('コピー', 'btn-ghost', btnStyle, () => copyImageFromSrc(data.data)));
+    }
     actions.appendChild(mkBtn('DL', 'btn-primary', btnStyle, () => downloadImage(data.data)));
   }
   actions.appendChild(mkBtn('削除', 'btn-danger', btnStyle, () => item.remove()));
@@ -483,14 +494,28 @@ function mkBtn(label, cls, style, fn) {
 
 async function copyImageFromSrc(src) {
   try {
-    const res = await fetch(src);
-    const blob = await res.blob();
-    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-    toast('画像をコピーしました ✓', 'ok');
+    // canvas経由でblobに変換してコピー
+    const img = new Image();
+    img.src = src;
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    canvas.toBlob(async (blob) => {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        toast('画像をコピーしました ✓', 'ok');
+      } catch(e) {
+        toast('コピー不可。DLボタンを使ってください', 'err');
+      }
+    }, 'image/png');
   } catch(e) {
     toast('コピー不可。DLボタンを使ってください', 'err');
   }
 }
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 function downloadImage(src) {
   const a = document.createElement('a');
