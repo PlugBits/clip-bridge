@@ -1,185 +1,512 @@
-INFO 2026-06-29T19:47:30.513176Z [httpRequest.requestMethod: OPTIONS] [httpRequest.status: 204] [httpRequest.responseSize: 237 B] [httpRequest.latency: 34 ms] [httpRequest.userAgent: Edg 149.0.0.0] https://drawing-similarity-api-879008144488.us-central1.run.app/analyze
-  {
-    "insertId": "6a42cbd2000861e625a6e27f",
-    "httpRequest": {
-      "requestMethod": "OPTIONS",
-      "requestUrl": "https://drawing-similarity-api-879008144488.us-central1.run.app/analyze",
-      "requestSize": "759",
-      "status": 204,
-      "responseSize": "237",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
-      "remoteIp": "47.48.240.251",
-      "serverIp": "34.143.79.2",
-      "latency": "0.034207950s",
-      "protocol": "HTTP/1.1"
-    },
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "service_name": "drawing-similarity-api",
-        "location": "us-central1",
-        "revision_name": "drawing-similarity-api-00115-hxk",
-        "configuration_name": "drawing-similarity-api",
-        "project_id": "drawing-similarity"
-      }
-    },
-    "timestamp": "2026-06-29T19:47:30.513176Z",
-    "severity": "INFO",
-    "labels": {
-      "instanceId": "002f8ffd473db9c43d535a27d65eca3b2932e009597e88b639123d76857332bdee0f62091d1b20ac3d55aca7a1307f1cef75385c701fbee6a8aae99d7775bf9e1af15c70002759229e4357df627423",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "commit-sha": "085cca53fed40794b92c982ad413bd7847e7065e",
-      "gcb-build-id": "dc51c996-e11f-4b85-b432-440755918113",
-      "gcb-trigger-region": "global"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Frequests",
-    "trace": "projects/drawing-similarity/traces/961cbade0015d740e26bf2d4fd8b0cc7",
-    "receiveTimestamp": "2026-06-29T19:47:30.557438279Z",
-    "spanId": "c01932dc4cfaf204",
-    "traceSampled": true
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipBridge</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
+    --accent: #5b7fff; --green: #3ecf8e; --red: #f04444;
+    --text: #e8eaf0; --muted: #6b7280; --border: #2a2e42;
+    --radius: 12px; --font: 'Inter', system-ui, -apple-system, sans-serif;
   }
-INFO 2026-06-29T19:47:32.602111Z [httpRequest.requestMethod: POST] [httpRequest.status: 200] [httpRequest.responseSize: 796 B] [httpRequest.latency: 8.412 s] [httpRequest.userAgent: Edg 149.0.0.0] https://drawing-similarity-api-879008144488.us-central1.run.app/analyze
-  {
-    "insertId": "6a42cbdd000057070bdfd54f",
-    "httpRequest": {
-      "requestMethod": "POST",
-      "requestUrl": "https://drawing-similarity-api-879008144488.us-central1.run.app/analyze",
-      "requestSize": "4369086",
-      "status": 200,
-      "responseSize": "796",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
-      "remoteIp": "47.48.240.251",
-      "serverIp": "34.143.79.2",
-      "latency": "8.412634889s",
-      "protocol": "HTTP/1.1"
-    },
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "project_id": "drawing-similarity",
-        "configuration_name": "drawing-similarity-api",
-        "revision_name": "drawing-similarity-api-00115-hxk",
-        "service_name": "drawing-similarity-api",
-        "location": "us-central1"
-      }
-    },
-    "timestamp": "2026-06-29T19:47:32.602111Z",
-    "severity": "INFO",
-    "labels": {
-      "commit-sha": "085cca53fed40794b92c982ad413bd7847e7065e",
-      "gcb-build-id": "dc51c996-e11f-4b85-b432-440755918113",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "gcb-trigger-region": "global",
-      "instanceId": "002f8ffd473db9c43d535a27d65eca3b2932e009597e88b639123d76857332bdee0f62091d1b20ac3d55aca7a1307f1cef75385c701fbee6a8aae99d7775bf9e1af15c70002759229e4357df627423",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Frequests",
-    "trace": "projects/drawing-similarity/traces/3c1bad526104b9f0e26bf2d4fd8b04e4",
-    "receiveTimestamp": "2026-06-29T19:47:41.035019879Z",
-    "spanId": "9924ee1720088797"
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--font);
+    min-height: 100dvh; display: flex; flex-direction: column;
+    align-items: center; padding: 20px 16px 48px;
   }
-DEFAULT 2026-06-29T19:47:38.065166Z [ocr] high-dpi render bytes=2235256 dpi=250
-  {
-    "textPayload": "[ocr] high-dpi render bytes=2235256 dpi=250",
-    "insertId": "6a42cbda0000fe8e10548430",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "configuration_name": "drawing-similarity-api",
-        "project_id": "drawing-similarity",
-        "location": "us-central1",
-        "service_name": "drawing-similarity-api",
-        "revision_name": "drawing-similarity-api-00115-hxk"
-      }
-    },
-    "timestamp": "2026-06-29T19:47:38.065166Z",
-    "labels": {
-      "gcb-trigger-region": "global",
-      "gcb-build-id": "dc51c996-e11f-4b85-b432-440755918113",
-      "commit-sha": "085cca53fed40794b92c982ad413bd7847e7065e",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "instanceId": "002f8ffd473db9c43d535a27d65eca3b2932e009597e88b639123d76857332bdee0f62091d1b20ac3d55aca7a1307f1cef75385c701fbee6a8aae99d7775bf9e1af15c70002759229e4357df627423"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T19:47:38.072255842Z"
+  header {
+    width: 100%; max-width: 520px; display: flex;
+    align-items: center; gap: 10px; margin-bottom: 20px;
   }
-DEFAULT 2026-06-29T19:47:38.719254Z [ocr] pass2 fraction crop bytes=86662
-  {
-    "textPayload": "[ocr] pass2 fraction crop bytes=86662",
-    "insertId": "6a42cbda000af9965a13eba1",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "revision_name": "drawing-similarity-api-00115-hxk",
-        "location": "us-central1",
-        "service_name": "drawing-similarity-api",
-        "project_id": "drawing-similarity",
-        "configuration_name": "drawing-similarity-api"
-      }
-    },
-    "timestamp": "2026-06-29T19:47:38.719254Z",
-    "labels": {
-      "gcb-trigger-region": "global",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "commit-sha": "085cca53fed40794b92c982ad413bd7847e7065e",
-      "gcb-build-id": "dc51c996-e11f-4b85-b432-440755918113",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "instanceId": "002f8ffd473db9c43d535a27d65eca3b2932e009597e88b639123d76857332bdee0f62091d1b20ac3d55aca7a1307f1cef75385c701fbee6a8aae99d7775bf9e1af15c70002759229e4357df627423"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T19:47:38.739499697Z"
+  .logo { width: 34px; height: 34px; background: var(--accent); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
+  .tagline { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; width: 100%; max-width: 520px; margin-bottom: 12px; }
+  .card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .btn { border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger  { background: #2a1a1a; color: var(--red); border: 1px solid #4a2020; }
+  .btn-sm      { padding: 6px 12px; font-size: 12px; }
+
+  .my-id-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .my-id-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .my-id-row { display: flex; align-items: center; gap: 8px; }
+  .my-id-num { font-size: 28px; font-weight: 800; color: var(--accent); letter-spacing: 0.15em; font-variant-numeric: tabular-nums; flex: 1; }
+  .join-block { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .join-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: 0.12em; text-align: center; outline: none; transition: border-color 0.15s; }
+  .join-input:focus { border-color: var(--accent); }
+  .join-input::placeholder { color: var(--muted); font-size: 14px; font-weight: 400; letter-spacing: 0; }
+  .status-bar { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--surface2); border-radius: 8px; font-size: 13px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .dot.online  { background: var(--green); box-shadow: 0 0 5px var(--green); }
+  .dot.waiting { background: var(--accent); animation: pulse 1.5s infinite; }
+  .dot.error   { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .tab-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab-row .btn { flex: 1; padding: 8px; }
+
+  #ios-paste-area { width: 100%; min-height: 80px; background: var(--surface2); border: 2px dashed var(--border); border-radius: 10px; padding: 12px; font-size: 14px; color: var(--text); resize: none; outline: none; font-family: var(--font); line-height: 1.6; transition: border-color 0.15s; display: none; }
+  #ios-paste-area:focus { border-color: var(--accent); border-style: solid; }
+  #ios-paste-area::placeholder { color: var(--muted); }
+
+  .drop-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 24px 16px; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+  .drop-zone.active { border-color: var(--accent); background: rgba(91,127,255,0.05); }
+  .drop-zone.has-content { border-color: var(--green); border-style: solid; background: rgba(62,207,142,0.04); }
+  .drop-icon { font-size: 28px; }
+  .drop-hint { font-size: 13px; color: var(--muted); }
+  .drop-hint strong { color: var(--text); }
+  .drop-hint-sub { font-size: 11px; color: var(--muted); }
+
+  #paste-trap { position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  #preview-wrap { display: none; margin-top: 10px; }
+  #preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border); display: none; }
+  #preview-text { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-all; max-height: 100px; overflow-y: auto; display: none; }
+  .send-row { display: flex; gap: 8px; margin-top: 10px; }
+
+  #direct-input { width: 100%; min-height: 90px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 14px; color: var(--text); resize: vertical; outline: none; font-family: var(--font); line-height: 1.6; }
+  #direct-input:focus { border-color: var(--accent); }
+
+  /* 受信 */
+  .receive-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px; }
+
+  /* 履歴折りたたみ */
+  .history-toggle {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer; margin-bottom: 8px;
+    font-size: 12px; color: var(--muted); user-select: none;
   }
-DEFAULT 2026-06-29T19:47:40.516451Z [ocr] gemini finishReason=STOP textLength=62
-  {
-    "textPayload": "[ocr] gemini finishReason=STOP textLength=62",
-    "insertId": "6a42cbdc0007e163d2f6265a",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "service_name": "drawing-similarity-api",
-        "location": "us-central1",
-        "revision_name": "drawing-similarity-api-00115-hxk",
-        "configuration_name": "drawing-similarity-api",
-        "project_id": "drawing-similarity"
-      }
-    },
-    "timestamp": "2026-06-29T19:47:40.516451Z",
-    "labels": {
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "commit-sha": "085cca53fed40794b92c982ad413bd7847e7065e",
-      "gcb-build-id": "dc51c996-e11f-4b85-b432-440755918113",
-      "gcb-trigger-region": "global",
-      "instanceId": "002f8ffd473db9c43d535a27d65eca3b2932e009597e88b639123d76857332bdee0f62091d1b20ac3d55aca7a1307f1cef75385c701fbee6a8aae99d7775bf9e1af15c70002759229e4357df627423",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T19:47:40.737635932Z"
+  .history-toggle:hover { border-color: var(--accent); color: var(--text); }
+  .history-toggle .arrow { transition: transform 0.2s; }
+  .history-toggle.open .arrow { transform: rotate(180deg); }
+  #history-wrap { display: none; }
+  #history-wrap.open { display: block; }
+
+  .received-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; animation: slideIn 0.2s ease; }
+  .received-item.mine { border-color: var(--accent-dim, #3a4fa8); background: #1a1e33; }
+  .received-item.history-item { opacity: 0.75; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .received-item img { max-width: 100%; max-height: 280px; border-radius: 6px; object-fit: contain; display: block; }
+  .item-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; gap: 6px; flex-wrap: wrap; }
+  .item-time { font-size: 11px; color: var(--muted); }
+  .item-badge { font-size: 10px; border-radius: 4px; padding: 2px 6px; }
+  .badge-mine    { color: var(--accent); background: rgba(91,127,255,0.15); }
+  .badge-history { color: var(--muted);  background: var(--surface); border: 1px solid var(--border); }
+  .received-text { font-size: 14px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+  .actions { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 9px 18px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; white-space: nowrap; z-index: 999; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.ok  { border-color: var(--green); color: var(--green); }
+  #toast.err { border-color: var(--red);   color: var(--red); }
+</style>
+</head>
+<body>
+
+<textarea id="paste-trap"></textarea>
+
+<header>
+  <div class="logo">📋</div>
+  <h1>ClipBridge</h1>
+  <span class="tagline">iPad ↔ Windows</span>
+</header>
+
+<div class="card">
+  <div class="card-title">接続</div>
+  <div class="my-id-block">
+    <div class="my-id-label">自分のID（相手に伝える）</div>
+    <div class="my-id-row">
+      <div class="my-id-num" id="my-id">----</div>
+      <button class="btn btn-ghost btn-sm" onclick="copyMyId()">コピー</button>
+    </div>
+  </div>
+  <div class="join-block">
+    <input class="join-input" id="room-input" placeholder="相手のID" maxlength="4" inputmode="numeric">
+    <button class="btn btn-primary" onclick="joinRoom()" style="width:100%">参加</button>
+  </div>
+  <div class="status-bar">
+    <div class="dot" id="status-dot"></div>
+    <span id="status-text">準備中...</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">送信</div>
+  <div class="tab-row">
+    <button class="btn btn-primary" id="tab-paste" onclick="switchTab('paste')">📋 ペースト</button>
+    <button class="btn btn-ghost"   id="tab-text"  onclick="switchTab('text')">⌨️ テキスト入力</button>
+  </div>
+  <div id="pane-paste">
+    <textarea id="ios-paste-area" placeholder="ここを長押し →「ペースト」をタップ"></textarea>
+    <div class="drop-zone" id="drop-zone"
+      onclick="focusPasteTrap()"
+      ondragover="onDragOver(event)"
+      ondragleave="onDragLeave(event)"
+      ondrop="onDrop(event)">
+      <div class="drop-icon">📤</div>
+      <div class="drop-hint" id="drop-hint"><strong>クリック → Ctrl+V</strong> または画像をドロップ</div>
+      <div class="drop-hint-sub">画像・テキスト対応</div>
+    </div>
+  </div>
+  <div id="pane-text" style="display:none">
+    <textarea id="direct-input" placeholder="ここに直接入力..." oninput="onDirectInput()"></textarea>
+  </div>
+  <div id="preview-wrap">
+    <img id="preview-img">
+    <div id="preview-text"></div>
+  </div>
+  <div class="send-row">
+    <button class="btn btn-primary" id="btn-send" onclick="sendContent()" disabled>送信</button>
+    <button class="btn btn-ghost" onclick="clearContent()">クリア</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">受信 / 履歴</div>
+  <!-- 履歴折りたたみ -->
+  <div class="history-toggle" id="history-toggle" onclick="toggleHistory()" style="display:none">
+    <span class="arrow">▼</span>
+    <span id="history-label">履歴を表示</span>
+  </div>
+  <div id="history-wrap">
+    <div id="history-list"></div>
+  </div>
+  <!-- リアルタイム受信 -->
+  <div id="receive-list">
+    <div class="receive-empty">まだ受信していません</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://ahrvesmafltdkrcjqfwh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnZlc21hZmx0ZGtyY2pxZndoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDU0MzUsImV4cCI6MjA5ODMyMTQzNX0.omwTTulKmH9WyRgo4AGVKEoAv1f3fzKesSudMFrafRo';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+let channel = null;
+let currentRoom = null;
+let pendingData = null;
+let myId = null;
+
+// ---- 初期化 ----
+window.addEventListener('load', () => {
+  myId = String(Math.floor(1000 + Math.random() * 9000));
+  document.getElementById('my-id').textContent = myId;
+  setStatus('waiting', '相手のIDを入力して参加してください');
+  if (isIOS) {
+    document.getElementById('ios-paste-area').style.display = 'block';
+    document.getElementById('drop-zone').style.display = 'none';
   }
-DEFAULT 2026-06-29T19:47:41.020010Z [ocr] pass2 raw="{\"drawingNo\":\"\",\"productName\":\"\",\"material\":\"\",\"thickness\":\"\"}" extracted={"drawingNo":"","productName":"","material":"","thickness":""}
-  {
-    "textPayload": "[ocr] pass2 raw=\"{\\\"drawingNo\\\":\\\"\\\",\\\"productName\\\":\\\"\\\",\\\"material\\\":\\\"\\\",\\\"thickness\\\":\\\"\\\"}\" extracted={\"drawingNo\":\"\",\"productName\":\"\",\"material\":\"\",\"thickness\":\"\"}",
-    "insertId": "6a42cbdd00004e2af726787c",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "revision_name": "drawing-similarity-api-00115-hxk",
-        "location": "us-central1",
-        "service_name": "drawing-similarity-api",
-        "project_id": "drawing-similarity",
-        "configuration_name": "drawing-similarity-api"
+  document.getElementById('ios-paste-area').addEventListener('paste', (e) => {
+    const items = e.clipboardData ? e.clipboardData.items : [];
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const reader = new FileReader();
+        reader.onload = (ev) => { setPreview('image', ev.target.result); e.target.value = ''; };
+        reader.readAsDataURL(item.getAsFile());
+        return;
       }
-    },
-    "timestamp": "2026-06-29T19:47:41.020010Z",
-    "labels": {
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "instanceId": "002f8ffd473db9c43d535a27d65eca3b2932e009597e88b639123d76857332bdee0f62091d1b20ac3d55aca7a1307f1cef75385c701fbee6a8aae99d7775bf9e1af15c70002759229e4357df627423",
-      "gcb-trigger-region": "global",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "gcb-build-id": "dc51c996-e11f-4b85-b432-440755918113",
-      "commit-sha": "085cca53fed40794b92c982ad413bd7847e7065e"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T19:47:41.071276305Z"
+    }
+    setTimeout(() => {
+      const val = e.target.value;
+      if (val.trim()) { setPreview('text', val); e.target.value = ''; }
+    }, 50);
+  });
+});
+
+// 画面復帰時に再接続＋履歴再取得
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && currentRoom) {
+    if (!channel || channel.state !== 'joined') {
+      setStatus('waiting', '再接続中...');
+      joinRoom();
+    }
   }
+});
+
+// ---- ルーム参加 ----
+async function joinRoom() {
+  const roomId = document.getElementById('room-input').value.trim();
+  if (!roomId || roomId.length !== 4) { toast('相手の4桁IDを入力してください', 'err'); return; }
+  if (channel) { await channel.unsubscribe(); channel = null; }
+  currentRoom = roomId;
+  setStatus('waiting', '接続中...');
+
+  await loadHistory(roomId);
+
+  channel = sb.channel('clip-' + roomId, { config: { broadcast: { self: false } } });
+  channel.on('broadcast', { event: 'clip' }, ({ payload }) => {
+    addToReceiveList(payload, false, false);
+  });
+  channel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      setStatus('online', 'ルーム ' + roomId + ' に接続中');
+      if (pendingData) document.getElementById('btn-send').disabled = false;
+      toast('接続しました ✓', 'ok');
+    } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+      setStatus('error', '切断されました');
+    }
+  });
+}
+
+// ---- 履歴取得 ----
+async function loadHistory(roomId) {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { data, error } = await sb
+    .from('clips')
+    .select('*')
+    .eq('room_id', roomId)
+    .gte('created_at', oneHourAgo)
+    .order('created_at', { ascending: true });
+
+  const histList = document.getElementById('history-list');
+  const toggle   = document.getElementById('history-toggle');
+  histList.innerHTML = '';
+
+  if (error || !data || data.length === 0) {
+    toggle.style.display = 'none';
+    return;
+  }
+
+  data.forEach(row => {
+    addToReceiveList({ type: row.type, data: row.data, ts: row.created_at }, true, false);
+  });
+
+  document.getElementById('history-label').textContent = `履歴 ${data.length}件（過去1時間）`;
+  toggle.style.display = 'flex';
+  toast('履歴 ' + data.length + '件を取得', 'ok');
+}
+
+function toggleHistory() {
+  const wrap   = document.getElementById('history-wrap');
+  const toggle = document.getElementById('history-toggle');
+  const open   = wrap.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+  document.getElementById('history-label').textContent = open
+    ? document.getElementById('history-label').textContent.replace('表示', '非表示')
+    : document.getElementById('history-label').textContent.replace('非表示', '表示');
+}
+
+// ---- DB保存 ----
+async function saveToDb(roomId, type, data) {
+  await sb.from('clips').insert({ room_id: roomId, type, data });
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  await sb.from('clips').delete().eq('room_id', roomId).lt('created_at', oneHourAgo);
+}
+
+function copyMyId() {
+  navigator.clipboard.writeText(myId);
+  toast('IDをコピーしました', 'ok');
+}
+
+// ---- PC用ペースト ----
+const pasteTrap = document.getElementById('paste-trap');
+pasteTrap.addEventListener('paste', (e) => {
+  e.preventDefault();
+  for (const item of e.clipboardData.items) {
+    if (item.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setPreview('image', ev.target.result);
+      reader.readAsDataURL(item.getAsFile());
+      return;
+    }
+  }
+  const text = e.clipboardData.getData('text');
+  if (text) setPreview('text', text);
+  else toast('テキストか画像をコピーしてペーストしてください', 'err');
+});
+
+function focusPasteTrap() {
+  pasteTrap.value = ''; pasteTrap.focus();
+  document.getElementById('drop-zone').classList.add('active');
+  document.getElementById('drop-hint').innerHTML = '<strong>Ctrl+V を押してください</strong>';
+  pasteTrap.onblur = () => {
+    document.getElementById('drop-zone').classList.remove('active');
+    if (!pendingData) document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
+  };
+}
+
+function onDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('active'); }
+function onDragLeave()  { document.getElementById('drop-zone').classList.remove('active'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('active');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreview('image', ev.target.result);
+    reader.readAsDataURL(file);
+  } else {
+    const text = e.dataTransfer.getData('text');
+    if (text) setPreview('text', text);
+  }
+}
+
+// ---- プレビュー ----
+function setPreview(type, data) {
+  pendingData = { type, data };
+  if (!isIOS) {
+    document.getElementById('drop-zone').classList.add('has-content');
+    document.getElementById('drop-hint').innerHTML = type === 'image' ? '📷 画像をペースト済み' : '📝 テキストをペースト済み';
+  }
+  document.getElementById('preview-wrap').style.display = '';
+  document.getElementById('preview-img').style.display  = type === 'image' ? 'block' : 'none';
+  document.getElementById('preview-text').style.display = type === 'text'  ? 'block' : 'none';
+  if (type === 'image') document.getElementById('preview-img').src = data;
+  else document.getElementById('preview-text').textContent = data;
+  document.getElementById('btn-send').disabled = !currentRoom;
+}
+
+function clearContent() {
+  pendingData = null;
+  if (!isIOS) {
+    document.getElementById('drop-zone').classList.remove('has-content', 'active');
+    document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
+  }
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('preview-img').src = '';
+  document.getElementById('preview-text').textContent = '';
+  document.getElementById('btn-send').disabled = true;
+}
+
+// ---- タブ ----
+function switchTab(tab) {
+  document.getElementById('pane-paste').style.display = tab === 'paste' ? '' : 'none';
+  document.getElementById('pane-text').style.display  = tab === 'text'  ? '' : 'none';
+  document.getElementById('tab-paste').className = 'btn ' + (tab === 'paste' ? 'btn-primary' : 'btn-ghost');
+  document.getElementById('tab-text').className  = 'btn ' + (tab === 'text'  ? 'btn-primary' : 'btn-ghost');
+  if (tab === 'text') clearContent();
+  if (tab === 'paste') { document.getElementById('direct-input').value = ''; pendingData = null; document.getElementById('btn-send').disabled = true; }
+}
+
+function onDirectInput() {
+  const val = document.getElementById('direct-input').value;
+  pendingData = val.trim() ? { type: 'text', data: val } : null;
+  document.getElementById('btn-send').disabled = !(pendingData && currentRoom);
+}
+
+// ---- 送信 ----
+async function sendContent() {
+  if (!channel || !currentRoom) { toast('接続されていません', 'err'); return; }
+  if (!pendingData) { toast('送信するデータがありません', 'err'); return; }
+  const payload = { ...pendingData, ts: new Date().toISOString() };
+  await channel.send({ type: 'broadcast', event: 'clip', payload });
+  await saveToDb(currentRoom, pendingData.type, pendingData.data);
+  // 自分の送信も受信エリアに追加
+  addToReceiveList(payload, false, true);
+  toast('送信しました ✓', 'ok');
+  clearContent();
+  if (document.getElementById('pane-text').style.display !== 'none') {
+    document.getElementById('direct-input').value = '';
+  }
+}
+
+// ---- 受信リストに追加 ----
+function addToReceiveList(data, isHistory, isMine) {
+  const ts   = data.ts ? new Date(data.ts) : new Date();
+  const time = ts.toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+
+  const item = document.createElement('div');
+  item.className = 'received-item' + (isHistory ? ' history-item' : '') + (isMine ? ' mine' : '');
+
+  if (data.type === 'image') {
+    const img = document.createElement('img');
+    img.src = data.data;
+    item.appendChild(img);
+  } else {
+    const p = document.createElement('div');
+    p.className = 'received-text';
+    p.textContent = data.data;
+    item.appendChild(p);
+  }
+
+  const meta = document.createElement('div');
+  meta.className = 'item-meta';
+
+  const left = document.createElement('div');
+  left.style.cssText = 'display:flex;gap:6px;align-items:center;';
+  left.innerHTML = `<span class="item-time">${time}</span>`;
+  if (isMine)    left.innerHTML += `<span class="item-badge badge-mine">送信</span>`;
+  if (isHistory) left.innerHTML += `<span class="item-badge badge-history">履歴</span>`;
+
+  const actions = document.createElement('div');
+  actions.className = 'actions';
+
+  if (data.type === 'text') {
+    actions.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', () => { navigator.clipboard.writeText(data.data); toast('コピーしました ✓', 'ok'); }));
+  } else {
+    if (!isIOS) actions.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', () => copyImage(data.data)));
+    actions.appendChild(mkBtn('DL', 'btn-primary btn-sm', () => downloadImage(data.data)));
+  }
+  actions.appendChild(mkBtn('削除', 'btn-danger btn-sm', () => item.remove()));
+
+  meta.appendChild(left);
+  meta.appendChild(actions);
+  item.appendChild(meta);
+
+  if (isHistory) {
+    // 履歴エリアに追加（古い順）
+    document.getElementById('history-list').appendChild(item);
+  } else {
+    // リアルタイムは新着順
+    const list  = document.getElementById('receive-list');
+    const empty = list.querySelector('.receive-empty');
+    if (empty) empty.remove();
+    list.prepend(item);
+    if (!isMine) toast(data.type === 'image' ? '画像を受信しました 📷' : 'テキストを受信しました', 'ok');
+  }
+}
+
+function mkBtn(label, cls, fn) {
+  const b = document.createElement('button');
+  b.className = 'btn ' + cls; b.textContent = label; b.onclick = fn; return b;
+}
+
+async function copyImage(src) {
+  try {
+    const img = new Image(); img.src = src;
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    canvas.toBlob(async (blob) => {
+      try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast('画像をコピーしました ✓', 'ok'); }
+      catch { toast('コピー不可。DLを使ってください', 'err'); }
+    }, 'image/png');
+  } catch { toast('コピー不可。DLを使ってください', 'err'); }
+}
+
+function downloadImage(src) {
+  const a = document.createElement('a'); a.href = src; a.download = 'clip-' + Date.now() + '.png'; a.click();
+}
+
+function setStatus(state, text) {
+  document.getElementById('status-dot').className = 'dot ' + state;
+  document.getElementById('status-text').textContent = text;
+}
+
+function copyMyId() { navigator.clipboard.writeText(myId); toast('IDをコピーしました', 'ok'); }
+
+let toastTimer = null;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 2500);
+}
+</script>
+</body>
+</html>
