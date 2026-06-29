@@ -4,13 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClipBridge</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
-    --accent: #5b7fff; --accent-dim: #3a4fa8;
-    --green: #3ecf8e; --red: #f04444;
+    --accent: #5b7fff; --green: #3ecf8e; --red: #f04444;
     --text: #e8eaf0; --muted: #6b7280; --border: #2a2e42;
     --radius: 12px; --font: 'Inter', system-ui, -apple-system, sans-serif;
   }
@@ -39,15 +38,6 @@
     font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
     text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
   }
-  .room-row { display: flex; gap: 8px; align-items: center; }
-  .room-id {
-    flex: 1; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 14px; font-size: 22px; font-weight: 700;
-    color: var(--accent); letter-spacing: 0.12em; text-align: center;
-    font-variant-numeric: tabular-nums; cursor: pointer; user-select: all;
-    transition: border-color 0.15s;
-  }
-  .room-id:hover { border-color: var(--accent); }
   .btn {
     border: none; border-radius: 8px; padding: 10px 16px;
     font-size: 13px; font-weight: 600; cursor: pointer;
@@ -58,13 +48,20 @@
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
   .btn-danger  { background: #2a1a1a; color: var(--red); border: 1px solid #4a2020; }
-  .btn-warn    { background: #2a200a; color: #f0a844; border: 1px solid #4a3010; }
-  .join-row { display: flex; gap: 8px; margin-top: 12px; }
+
+  /* 接続 */
+  .room-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .room-id {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; font-size: 22px; font-weight: 700;
+    color: var(--accent); letter-spacing: 0.12em; text-align: center;
+    cursor: pointer; user-select: all;
+  }
+  .join-row { display: flex; gap: 8px; }
   .join-input {
     flex: 1; background: var(--surface2); border: 1px solid var(--border);
     border-radius: 8px; padding: 10px 14px; font-size: 20px; font-weight: 700;
-    color: var(--text); letter-spacing: 0.12em; text-align: center;
-    outline: none; transition: border-color 0.15s;
+    color: var(--text); letter-spacing: 0.12em; text-align: center; outline: none;
   }
   .join-input:focus { border-color: var(--accent); }
   .join-input::placeholder { color: var(--muted); font-size: 14px; font-weight: 400; letter-spacing: 0; }
@@ -87,64 +84,36 @@
     border: 2px dashed var(--border); border-radius: 10px; padding: 28px 20px;
     text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s;
     min-height: 120px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 8px; position: relative;
+    align-items: center; justify-content: center; gap: 8px;
   }
-  .drop-zone.active  { border-color: var(--accent); background: rgba(91,127,255,0.06); }
-  .drop-zone.has-content { border-color: var(--accent-dim); background: rgba(91,127,255,0.04); }
+  .drop-zone.active { border-color: var(--accent); background: rgba(91,127,255,0.06); }
+  .drop-zone.has-content { border-color: var(--green); background: rgba(62,207,142,0.04); }
   .drop-icon { font-size: 32px; }
   .drop-hint { font-size: 13px; color: var(--muted); }
   .drop-hint strong { color: var(--text); }
 
-  /* 隠しtextarea（ペースト受け取り用） */
-  #paste-trap {
-    position: fixed; top: -9999px; left: -9999px;
-    width: 1px; height: 1px; opacity: 0;
-  }
+  #paste-trap { position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
-  /* プレビュー */
   #preview-wrap { display: none; margin-top: 12px; }
-  #preview-img {
-    max-width: 100%; max-height: 240px; border-radius: 8px;
-    object-fit: contain; border: 1px solid var(--border); display: none;
-  }
-  #preview-text {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px; font-size: 13px; color: var(--text);
-    white-space: pre-wrap; word-break: break-all; max-height: 120px;
-    overflow-y: auto; display: none;
-  }
+  #preview-img { max-width: 100%; max-height: 240px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border); display: none; }
+  #preview-text { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-all; max-height: 120px; overflow-y: auto; display: none; }
   .send-row { display: flex; gap: 8px; margin-top: 12px; }
 
-  /* テキスト入力 */
   #direct-input {
-    width: 100%; min-height: 100px;
-    background: var(--surface2); border: 1px solid var(--border);
+    width: 100%; min-height: 100px; background: var(--surface2); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px; font-size: 14px; color: var(--text);
     resize: vertical; outline: none; font-family: var(--font); line-height: 1.6;
-    transition: border-color 0.15s;
   }
   #direct-input:focus { border-color: var(--accent); }
 
-  /* 受信 */
   .receive-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 24px; }
-  .received-item {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px; margin-bottom: 10px;
-    animation: slideIn 0.2s ease;
-  }
+  .received-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; animation: slideIn 0.2s ease; }
   @keyframes slideIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-  .received-item img {
-    max-width: 100%; max-height: 320px; border-radius: 6px;
-    object-fit: contain; display: block; cursor: pointer;
-  }
-  .item-meta {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 10px; gap: 8px;
-  }
+  .received-item img { max-width: 100%; max-height: 320px; border-radius: 6px; object-fit: contain; display: block; cursor: pointer; }
+  .item-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; gap: 8px; }
   .item-time { font-size: 11px; color: var(--muted); }
   .received-text { font-size: 14px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
 
-  /* トースト */
   #toast {
     position: fixed; bottom: 28px; left: 50%;
     transform: translateX(-50%) translateY(20px);
@@ -160,7 +129,6 @@
 </head>
 <body>
 
-<!-- ペースト受け取り用の隠しtextarea -->
 <textarea id="paste-trap"></textarea>
 
 <header>
@@ -171,20 +139,18 @@
 
 <!-- 接続カード -->
 <div class="card">
-  <div class="card-title">接続</div>
+  <div class="card-title">ルーム</div>
   <div class="room-row">
-    <div class="room-id" id="my-id" title="タップでコピー">----</div>
-    <button class="btn btn-ghost" onclick="copyMyId()">IDコピー</button>
+    <div class="room-id" id="my-room" title="タップでコピー">----</div>
+    <button class="btn btn-ghost" onclick="copyRoomId()">IDコピー</button>
   </div>
   <div class="join-row">
-    <input class="join-input" id="peer-input" placeholder="相手のID（4桁）" maxlength="4" inputmode="numeric">
-    <button class="btn btn-primary" id="btn-connect" onclick="connectToPeer()">接続</button>
-    <button class="btn btn-warn"    id="btn-reconnect" onclick="reconnect()" style="display:none">再接続</button>
-    <button class="btn btn-danger"  id="btn-disconnect" onclick="disconnect()" style="display:none">切断</button>
+    <input class="join-input" id="room-input" placeholder="ルームID（4桁）" maxlength="4" inputmode="numeric">
+    <button class="btn btn-primary" onclick="joinRoom()">参加</button>
   </div>
   <div class="status-bar">
     <div class="dot" id="status-dot"></div>
-    <span id="status-text">初期化中...</span>
+    <span id="status-text">準備中...</span>
   </div>
 </div>
 
@@ -196,7 +162,6 @@
     <button class="btn btn-ghost"   id="tab-text"  onclick="switchTab('text')">⌨️ テキスト入力</button>
   </div>
 
-  <!-- ペーストタブ -->
   <div id="pane-paste">
     <div class="drop-zone" id="drop-zone"
       onclick="focusPasteTrap()"
@@ -209,7 +174,6 @@
     </div>
   </div>
 
-  <!-- テキスト入力タブ -->
   <div id="pane-text" style="display:none">
     <textarea id="direct-input" placeholder="ここに直接入力..." oninput="onDirectInput()"></textarea>
   </div>
@@ -235,105 +199,93 @@
 <div id="toast"></div>
 
 <script>
-let peer = null;
-let conn = null;
+const SUPABASE_URL = 'https://ahrvesmafltdkrcjqfwh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnZlc21hZmx0ZGtyY2pxZndoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDU0MzUsImV4cCI6MjA5ODMyMTQzNX0.omwTTulKmH9WyRgo4AGVKEoAv1f3fzKesSudMFrafRo';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let channel = null;
+let currentRoom = null;
 let pendingData = null;
-let lastPeerId = null;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-// ---- PeerJS ----
-function initPeer() {
-  const id = String(Math.floor(1000 + Math.random() * 9000));
-  setStatus('waiting', '待機中...');
-  peer = new Peer(id, { host: '0.peerjs.com', port: 443, secure: true, path: '/' });
-  peer.on('open', (id) => {
-    document.getElementById('my-id').textContent = id;
-    setStatus('waiting', '相手のIDを入力して接続してください');
+// ---- ルーム ----
+function genRoomId() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+window.addEventListener('load', () => {
+  const id = genRoomId();
+  document.getElementById('my-room').textContent = id;
+  setStatus('waiting', 'ルームIDを相手に伝えるか、相手のIDで参加してください');
+});
+
+function joinRoom() {
+  const roomId = document.getElementById('room-input').value.trim() || document.getElementById('my-room').textContent;
+  if (!roomId || roomId.length !== 4) { toast('4桁のルームIDを入力してください', 'err'); return; }
+  if (channel) { channel.unsubscribe(); channel = null; }
+  currentRoom = roomId;
+  setStatus('waiting', '接続中...');
+
+  channel = supabase.channel('clip-' + roomId, {
+    config: { broadcast: { self: false } }
   });
-  peer.on('connection', (c) => { setupConn(c); });
-  peer.on('error', (err) => {
-    setStatus('error', 'エラー: ' + err.type);
-    toast('接続エラー: ' + err.type, 'err');
+
+  channel.on('broadcast', { event: 'clip' }, ({ payload }) => {
+    receiveContent(payload);
+  });
+
+  channel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      setStatus('online', 'ルーム ' + roomId + ' に参加中');
+      document.getElementById('btn-send').disabled = (pendingData === null);
+      toast('接続しました ✓', 'ok');
+    } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+      setStatus('error', '切断されました');
+      toast('切断されました', 'err');
+    }
   });
 }
 
-function setupConn(c) {
-  conn = c;
-  conn.on('open', () => {
-    lastPeerId = conn.peer;
-    setStatus('online', '接続中: ' + conn.peer);
-    document.getElementById('btn-connect').style.display = 'none';
-    document.getElementById('btn-reconnect').style.display = 'none';
-    document.getElementById('btn-disconnect').style.display = '';
-    if (pendingData) document.getElementById('btn-send').disabled = false;
-    toast('接続しました ✓', 'ok');
-  });
-  conn.on('data', receiveContent);
-  conn.on('close', onDisconnected);
-  conn.on('error', onDisconnected);
-}
+// 自分のIDで自動参加
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const myId = document.getElementById('my-room').textContent;
+    document.getElementById('room-input').value = myId;
+    joinRoom();
+  }, 300);
+});
 
-function onDisconnected() {
-  conn = null;
-  setStatus('error', '切断されました');
-  document.getElementById('btn-connect').style.display = lastPeerId ? 'none' : '';
-  document.getElementById('btn-reconnect').style.display = lastPeerId ? '' : 'none';
-  document.getElementById('btn-disconnect').style.display = 'none';
-  document.getElementById('btn-send').disabled = true;
-  toast('切断されました', 'err');
-}
-
-// 画面復帰時に自動再接続
+// 画面復帰時に再接続
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'visible') return;
-  if (lastPeerId && (!conn || !conn.open)) {
-    setStatus('waiting', '再接続中...');
-    setTimeout(() => reconnect(), 500);
+  if (document.visibilityState === 'visible' && currentRoom) {
+    if (!channel || channel.state !== 'joined') {
+      setStatus('waiting', '再接続中...');
+      joinRoom();
+    }
   }
 });
 
-function connectToPeer() {
-  const peerId = document.getElementById('peer-input').value.trim();
-  if (!peerId || peerId.length !== 4) { toast('4桁のIDを入力してください', 'err'); return; }
-  lastPeerId = peerId;
-  setStatus('waiting', '接続中...');
-  setupConn(peer.connect(peerId, { reliable: true }));
+function copyRoomId() {
+  const id = document.getElementById('my-room').textContent;
+  navigator.clipboard.writeText(id);
+  toast('ルームIDをコピーしました', 'ok');
 }
 
-function reconnect() {
-  if (!lastPeerId) return;
-  setStatus('waiting', '再接続中...');
-  document.getElementById('btn-reconnect').style.display = 'none';
-  setupConn(peer.connect(lastPeerId, { reliable: true }));
-}
-
-function disconnect() {
-  lastPeerId = null;
-  if (conn) { conn.close(); conn = null; }
-  setStatus('waiting', '切断しました');
-  document.getElementById('btn-connect').style.display = '';
-  document.getElementById('btn-reconnect').style.display = 'none';
-  document.getElementById('btn-disconnect').style.display = 'none';
-  document.getElementById('btn-send').disabled = true;
-}
-
-// ---- ペースト（隠しtextarea方式）----
+// ---- ペースト ----
 const pasteTrap = document.getElementById('paste-trap');
-
 pasteTrap.addEventListener('paste', (e) => {
   e.preventDefault();
-  const items = e.clipboardData.items;
-  for (const item of items) {
+  for (const item of e.clipboardData.items) {
     if (item.type.startsWith('image/')) {
-      const blob = item.getAsFile();
       const reader = new FileReader();
       reader.onload = (ev) => setPreview('image', ev.target.result);
-      reader.readAsDataURL(blob);
+      reader.readAsDataURL(item.getAsFile());
       return;
     }
   }
   const text = e.clipboardData.getData('text');
-  if (text) { setPreview('text', text); }
-  else { toast('テキストか画像をコピーしてペーストしてください', 'err'); }
+  if (text) setPreview('text', text);
+  else toast('テキストか画像をコピーしてペーストしてください', 'err');
 });
 
 function focusPasteTrap() {
@@ -341,23 +293,14 @@ function focusPasteTrap() {
   pasteTrap.focus();
   document.getElementById('drop-zone').classList.add('active');
   document.getElementById('drop-hint').innerHTML = '<strong>Ctrl+V を押してください</strong>（iOS: 長押し → ペースト）';
-  // フォーカスが外れたらactive解除
   pasteTrap.onblur = () => {
     document.getElementById('drop-zone').classList.remove('active');
-    if (!pendingData) {
-      document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
-    }
+    if (!pendingData) document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
   };
 }
 
-// ドラッグ&ドロップ
-function onDragOver(e) {
-  e.preventDefault();
-  document.getElementById('drop-zone').classList.add('active');
-}
-function onDragLeave(e) {
-  document.getElementById('drop-zone').classList.remove('active');
-}
+function onDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('active'); }
+function onDragLeave()  { document.getElementById('drop-zone').classList.remove('active'); }
 function onDrop(e) {
   e.preventDefault();
   document.getElementById('drop-zone').classList.remove('active');
@@ -372,22 +315,16 @@ function onDrop(e) {
   }
 }
 
-// ---- プレビュー ----
 function setPreview(type, data) {
   pendingData = { type, data };
   document.getElementById('drop-zone').classList.add('has-content');
   document.getElementById('drop-hint').innerHTML = type === 'image' ? '📷 画像をペースト済み' : '📝 テキストをペースト済み';
   document.getElementById('preview-wrap').style.display = '';
-  if (type === 'image') {
-    document.getElementById('preview-img').src = data;
-    document.getElementById('preview-img').style.display = 'block';
-    document.getElementById('preview-text').style.display = 'none';
-  } else {
-    document.getElementById('preview-text').textContent = data;
-    document.getElementById('preview-text').style.display = 'block';
-    document.getElementById('preview-img').style.display = 'none';
-  }
-  if (conn && conn.open) document.getElementById('btn-send').disabled = false;
+  document.getElementById('preview-img').style.display  = type === 'image' ? 'block' : 'none';
+  document.getElementById('preview-text').style.display = type === 'text'  ? 'block' : 'none';
+  if (type === 'image') document.getElementById('preview-img').src = data;
+  else document.getElementById('preview-text').textContent = data;
+  document.getElementById('btn-send').disabled = false;
 }
 
 function clearContent() {
@@ -403,35 +340,31 @@ function clearContent() {
 }
 
 // ---- タブ ----
-let currentTab = 'paste';
 function switchTab(tab) {
-  currentTab = tab;
   document.getElementById('pane-paste').style.display = tab === 'paste' ? '' : 'none';
   document.getElementById('pane-text').style.display  = tab === 'text'  ? '' : 'none';
   document.getElementById('tab-paste').className = 'btn ' + (tab === 'paste' ? 'btn-primary' : 'btn-ghost');
   document.getElementById('tab-text').className  = 'btn ' + (tab === 'text'  ? 'btn-primary' : 'btn-ghost');
   if (tab === 'text') clearContent();
-  if (tab === 'paste') {
-    document.getElementById('direct-input').value = '';
-    pendingData = null;
-    document.getElementById('btn-send').disabled = true;
-  }
+  if (tab === 'paste') { document.getElementById('direct-input').value = ''; pendingData = null; document.getElementById('btn-send').disabled = true; }
 }
 
 function onDirectInput() {
   const val = document.getElementById('direct-input').value;
   pendingData = val.trim() ? { type: 'text', data: val } : null;
-  document.getElementById('btn-send').disabled = !(pendingData && conn && conn.open);
+  document.getElementById('btn-send').disabled = !pendingData;
 }
 
 // ---- 送信 ----
-function sendContent() {
-  if (!conn || !conn.open) { toast('接続されていません', 'err'); return; }
+async function sendContent() {
+  if (!channel) { toast('ルームに参加していません', 'err'); return; }
   if (!pendingData) { toast('送信するデータがありません', 'err'); return; }
-  conn.send(pendingData);
+  await channel.send({ type: 'broadcast', event: 'clip', payload: pendingData });
   toast('送信しました ✓', 'ok');
   clearContent();
-  if (currentTab === 'text') document.getElementById('direct-input').value = '';
+  if (document.getElementById('pane-text').style.display !== 'none') {
+    document.getElementById('direct-input').value = '';
+  }
 }
 
 // ---- 受信 ----
@@ -447,8 +380,6 @@ function receiveContent(data) {
   if (data.type === 'image') {
     const img = document.createElement('img');
     img.src = data.data;
-    img.title = 'クリックでコピー';
-    img.onclick = () => copyImageFromSrc(data.data);
     item.appendChild(img);
   } else {
     const p = document.createElement('div');
@@ -463,19 +394,15 @@ function receiveContent(data) {
 
   const actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:6px;';
-
-  const btnStyle = 'padding:6px 12px;font-size:12px;';
+  const s = 'padding:6px 12px;font-size:12px;';
 
   if (data.type === 'text') {
-    const b = mkBtn('コピー', 'btn-ghost', btnStyle, () => { navigator.clipboard.writeText(data.data); toast('コピーしました ✓', 'ok'); });
-    actions.appendChild(b);
+    actions.appendChild(mkBtn('コピー', 'btn-ghost', s, () => { navigator.clipboard.writeText(data.data); toast('コピーしました ✓', 'ok'); }));
   } else {
-    if (!isIOS) {
-      actions.appendChild(mkBtn('コピー', 'btn-ghost', btnStyle, () => copyImageFromSrc(data.data)));
-    }
-    actions.appendChild(mkBtn('DL', 'btn-primary', btnStyle, () => downloadImage(data.data)));
+    if (!isIOS) actions.appendChild(mkBtn('コピー', 'btn-ghost', s, () => copyImage(data.data)));
+    actions.appendChild(mkBtn('DL', 'btn-primary', s, () => downloadImage(data.data)));
   }
-  actions.appendChild(mkBtn('削除', 'btn-danger', btnStyle, () => item.remove()));
+  actions.appendChild(mkBtn('削除', 'btn-danger', s, () => item.remove()));
 
   meta.appendChild(actions);
   item.appendChild(meta);
@@ -485,37 +412,25 @@ function receiveContent(data) {
 
 function mkBtn(label, cls, style, fn) {
   const b = document.createElement('button');
-  b.className = 'btn ' + cls;
-  b.style.cssText = style;
-  b.textContent = label;
-  b.onclick = fn;
+  b.className = 'btn ' + cls; b.style.cssText = style; b.textContent = label; b.onclick = fn;
   return b;
 }
 
-async function copyImageFromSrc(src) {
+async function copyImage(src) {
   try {
-    // canvas経由でblobに変換してコピー
-    const img = new Image();
-    img.src = src;
+    const img = new Image(); img.src = src;
     await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
     const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
     canvas.getContext('2d').drawImage(img, 0, 0);
     canvas.toBlob(async (blob) => {
       try {
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         toast('画像をコピーしました ✓', 'ok');
-      } catch(e) {
-        toast('コピー不可。DLボタンを使ってください', 'err');
-      }
+      } catch { toast('コピー不可。DLを使ってください', 'err'); }
     }, 'image/png');
-  } catch(e) {
-    toast('コピー不可。DLボタンを使ってください', 'err');
-  }
+  } catch { toast('コピー不可。DLを使ってください', 'err'); }
 }
-
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 function downloadImage(src) {
   const a = document.createElement('a');
@@ -527,12 +442,6 @@ function setStatus(state, text) {
   document.getElementById('status-dot').className = 'dot ' + state;
   document.getElementById('status-text').textContent = text;
 }
-function copyMyId() {
-  const id = document.getElementById('my-id').textContent;
-  if (id === '----') return;
-  navigator.clipboard.writeText(id);
-  toast('IDをコピーしました', 'ok');
-}
 let toastTimer = null;
 function toast(msg, type = 'ok') {
   const el = document.getElementById('toast');
@@ -540,8 +449,6 @@ function toast(msg, type = 'ok') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = ''; }, 2500);
 }
-
-initPeer();
 </script>
 </body>
 </html>
