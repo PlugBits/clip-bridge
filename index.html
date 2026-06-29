@@ -480,8 +480,7 @@ function addToReceiveList(data, isHistory, isMine) {
   } else {
     const prev = document.createElement('span');
     prev.className = 'item-preview has-text';
-    prev.textContent = data.data.replace(/
-/g, ' ');
+    prev.textContent = data.data.split('\n').join(' ');
     header.appendChild(prev);
     // テキストのインラインコピーボタン
     const inlineCopy = document.createElement('div');
