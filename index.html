@@ -1,171 +1,728 @@
-INFO 2026-06-29T17:43:23.290454Z [httpRequest.requestMethod: OPTIONS] [httpRequest.status: 204] [httpRequest.responseSize: 237 B] [httpRequest.latency: 37 ms] [httpRequest.userAgent: Edg 149.0.0.0] https://drawing-similarity-api-879008144488.us-central1.run.app/analyze
-  {
-    "insertId": "6a42aebb0005065ec3efbf6f",
-    "httpRequest": {
-      "requestMethod": "OPTIONS",
-      "requestUrl": "https://drawing-similarity-api-879008144488.us-central1.run.app/analyze",
-      "requestSize": "760",
-      "status": 204,
-      "responseSize": "237",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
-      "remoteIp": "47.48.240.251",
-      "serverIp": "34.143.72.2",
-      "latency": "0.037382047s",
-      "protocol": "HTTP/1.1"
-    },
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "configuration_name": "drawing-similarity-api",
-        "service_name": "drawing-similarity-api",
-        "revision_name": "drawing-similarity-api-00110-wmj",
-        "project_id": "drawing-similarity",
-        "location": "us-central1"
-      }
-    },
-    "timestamp": "2026-06-29T17:43:23.290454Z",
-    "severity": "INFO",
-    "labels": {
-      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "gcb-trigger-region": "global",
-      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
-      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Frequests",
-    "trace": "projects/drawing-similarity/traces/18d1739332168de04e6efad02ac1e416",
-    "receiveTimestamp": "2026-06-29T17:43:23.343904105Z",
-    "spanId": "e8750815f2d0246c",
-    "traceSampled": true
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipBridge</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --accent: #5b7fff;
+    --accent-dim: #3a4fa8;
+    --green: #3ecf8e;
+    --red: #f04444;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --border: #2a2e42;
+    --radius: 12px;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
   }
-DEFAULT 2026-06-29T17:43:28.553856Z [ocr] high-dpi render bytes=445860 dpi=250
-  {
-    "textPayload": "[ocr] high-dpi render bytes=445860 dpi=250",
-    "insertId": "6a42aec000087380fa1649b1",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "revision_name": "drawing-similarity-api-00110-wmj",
-        "configuration_name": "drawing-similarity-api",
-        "service_name": "drawing-similarity-api",
-        "location": "us-central1",
-        "project_id": "drawing-similarity"
-      }
-    },
-    "timestamp": "2026-06-29T17:43:28.553856Z",
-    "labels": {
-      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
-      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
-      "gcb-trigger-region": "global"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:43:28.562371021Z"
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
   }
-DEFAULT 2026-06-29T17:43:32.964282Z [ocr] locate pass1 raw="\"MASS\" / \"K"
-  {
-    "textPayload": "[ocr] locate pass1 raw=\"\\\"MASS\\\" / \\\"K\"",
-    "insertId": "6a42aec4000eb6bafb2e46d9",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "project_id": "drawing-similarity",
-        "location": "us-central1",
-        "configuration_name": "drawing-similarity-api",
-        "service_name": "drawing-similarity-api",
-        "revision_name": "drawing-similarity-api-00110-wmj"
-      }
-    },
-    "timestamp": "2026-06-29T17:43:32.964282Z",
-    "labels": {
-      "gcb-trigger-region": "global",
-      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
-      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:43:33.225223102Z"
+
+  header {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
   }
-DEFAULT 2026-06-29T17:43:32.964344Z [ocr] locate pass1 no JSON found, fallback to full image
-  {
-    "textPayload": "[ocr] locate pass1 no JSON found, fallback to full image",
-    "insertId": "6a42aec4000eb6f82e554ff8",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "location": "us-central1",
-        "project_id": "drawing-similarity",
-        "revision_name": "drawing-similarity-api-00110-wmj",
-        "service_name": "drawing-similarity-api",
-        "configuration_name": "drawing-similarity-api"
-      }
-    },
-    "timestamp": "2026-06-29T17:43:32.964344Z",
-    "labels": {
-      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "gcb-trigger-region": "global",
-      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:43:33.225223102Z"
+
+  .logo {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
   }
-DEFAULT 2026-06-29T17:43:32.964392Z [ocr] pass2 no bbox, using full high-dpi image
-  {
-    "textPayload": "[ocr] pass2 no bbox, using full high-dpi image",
-    "insertId": "6a42aec4000eb728d2569db5",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "service_name": "drawing-similarity-api",
-        "configuration_name": "drawing-similarity-api",
-        "revision_name": "drawing-similarity-api-00110-wmj",
-        "project_id": "drawing-similarity",
-        "location": "us-central1"
-      }
-    },
-    "timestamp": "2026-06-29T17:43:32.964392Z",
-    "labels": {
-      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run",
-      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "gcb-trigger-region": "global",
-      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:43:33.225223102Z"
+
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
   }
-DEFAULT 2026-06-29T17:43:36.572519Z [ocr] pass2 raw="{\"drawingNo\":\"K2054-" extracted={"drawingNo":"","productName":""}
-  {
-    "textPayload": "[ocr] pass2 raw=\"{\\\"drawingNo\\\":\\\"K2054-\" extracted={\"drawingNo\":\"\",\"productName\":\"\"}",
-    "insertId": "6a42aec80008bc6745110e11",
-    "resource": {
-      "type": "cloud_run_revision",
-      "labels": {
-        "project_id": "drawing-similarity",
-        "location": "us-central1",
-        "service_name": "drawing-similarity-api",
-        "configuration_name": "drawing-similarity-api",
-        "revision_name": "drawing-similarity-api-00110-wmj"
-      }
-    },
-    "timestamp": "2026-06-29T17:43:36.572519Z",
-    "labels": {
-      "gcb-trigger-id": "fb62bf8d-9c8b-4262-b130-10d9b320ee31",
-      "commit-sha": "53861c2d8643e5ec518753c38d0140d858efcb10",
-      "gcb-trigger-region": "global",
-      "gcb-build-id": "660b4e4e-814e-49d3-9d3c-12382c1b7322",
-      "instanceId": "002f8ffd47031e3e51e5952596a1a3d6ecdc436aa8d16e1cc9017b5e03f0bbc927ba17c984f87bd5b70962629e2112d72ebbebf2b3b02e0c384132ffb0eb159b54cbb3ed829f457a643b8b007300",
-      "managed-by": "gcp-cloud-build-deploy-cloud-run"
-    },
-    "logName": "projects/drawing-similarity/logs/run.googleapis.com%2Fstdout",
-    "receiveTimestamp": "2026-06-29T17:43:36.894649043Z"
+
+  .tagline {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
   }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 100%;
+    max-width: 560px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* --- 接続セクション --- */
+  .room-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .room-id {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    user-select: all;
+    transition: border-color 0.15s;
+  }
+
+  .room-id:hover { border-color: var(--accent); }
+
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger  { background: #2a1a1a; color: var(--red); border: 1px solid #4a2020; }
+
+  .join-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .join-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.12em;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .join-input:focus { border-color: var(--accent); }
+  .join-input::placeholder { color: var(--muted); font-size: 14px; font-weight: 400; letter-spacing: 0; }
+
+  /* --- ステータス --- */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .dot.online  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot.waiting { background: var(--accent); animation: pulse 1.5s infinite; }
+  .dot.error   { background: var(--red); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+
+  /* --- 送信エリア --- */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(91,127,255,0.06);
+  }
+  .drop-zone.has-content {
+    border-color: var(--accent-dim);
+    background: rgba(91,127,255,0.04);
+  }
+
+  .drop-icon { font-size: 32px; }
+  .drop-hint { font-size: 13px; color: var(--muted); }
+  .drop-hint strong { color: var(--text); }
+
+  /* プレビュー */
+  #preview-wrap {
+    display: none;
+    margin-top: 12px;
+  }
+  #preview-img {
+    max-width: 100%;
+    max-height: 240px;
+    border-radius: 8px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+  }
+  #preview-text {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 120px;
+    overflow-y: auto;
+    display: none;
+  }
+
+  .send-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  /* --- 受信エリア --- */
+  .receive-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 24px;
+  }
+
+  .received-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .received-item img {
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 6px;
+    object-fit: contain;
+    display: block;
+    cursor: pointer;
+  }
+
+  .item-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    gap: 8px;
+  }
+  .item-time { font-size: 11px; color: var(--muted); }
+
+  .received-text {
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.6;
+  }
+
+  /* トースト */
+  #toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 999;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  #toast.ok   { border-color: var(--green); color: var(--green); }
+  #toast.err  { border-color: var(--red);   color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">📋</div>
+  <h1>ClipBridge</h1>
+  <span class="tagline">iPad ↔ Windows</span>
+</header>
+
+<!-- 接続カード -->
+<div class="card">
+  <div class="card-title">接続</div>
+
+  <div class="room-row">
+    <div class="room-id" id="my-id" title="タップでコピー">----</div>
+    <button class="btn btn-ghost" onclick="copyMyId()">IDコピー</button>
+  </div>
+
+  <div class="join-row">
+    <input class="join-input" id="peer-input" placeholder="相手のID（4桁）" maxlength="4" inputmode="numeric">
+    <button class="btn btn-primary" id="btn-connect" onclick="connectToPeer()">接続</button>
+    <button class="btn btn-danger" id="btn-disconnect" onclick="disconnect()" style="display:none">切断</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="dot" id="status-dot"></div>
+    <span id="status-text">初期化中...</span>
+  </div>
+</div>
+
+<!-- 送信カード -->
+<div class="card" id="send-card">
+  <div class="card-title">送信</div>
+
+  <!-- タブ切り替え -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <button class="btn btn-primary" id="tab-paste" onclick="switchTab('paste')" style="flex:1;padding:8px;">📋 ペースト</button>
+    <button class="btn btn-ghost"   id="tab-text"  onclick="switchTab('text')"  style="flex:1;padding:8px;">⌨️ テキスト入力</button>
+  </div>
+
+  <!-- ペーストタブ -->
+  <div id="pane-paste">
+    <div class="drop-zone" id="drop-zone"
+      contenteditable="true"
+      tabindex="0"
+      ondragover="onDragOver(event)"
+      ondragleave="onDragLeave(event)"
+      ondrop="onDrop(event)"
+      onpaste="onPasteEvent(event)"
+      onfocus="onDropZoneFocus()"
+      style="outline:none;cursor:text;">
+      <div class="drop-icon" id="drop-icon">📤</div>
+      <div class="drop-hint" id="drop-hint1"><strong>クリックしてCtrl+V</strong>　または画像をドロップ</div>
+      <div class="drop-hint" id="drop-hint2" style="font-size:11px">iOS: 写真をコピー後ここをタップ → 「ペースト」</div>
+    </div>
+  </div>
+
+  <!-- テキスト入力タブ -->
+  <div id="pane-text" style="display:none;">
+    <textarea id="direct-input"
+      placeholder="ここに直接入力..."
+      oninput="onDirectInput()"
+      style="
+        width:100%;min-height:100px;
+        background:var(--surface2);border:1px solid var(--border);
+        border-radius:10px;padding:12px;
+        font-size:14px;color:var(--text);
+        resize:vertical;outline:none;
+        font-family:var(--font);line-height:1.6;
+        transition:border-color 0.15s;
+      "
+    ></textarea>
+  </div>
+
+  <div id="preview-wrap">
+    <img id="preview-img" style="display:none">
+    <div id="preview-text"></div>
+  </div>
+
+  <div class="send-row">
+    <button class="btn btn-primary" id="btn-send" onclick="sendContent()" disabled>送信</button>
+    <button class="btn btn-ghost" onclick="clearContent()">クリア</button>
+  </div>
+</div>
+
+<!-- 受信カード -->
+<div class="card">
+  <div class="card-title">受信</div>
+  <div id="receive-list">
+    <div class="receive-empty">まだ受信していません</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ---- 状態 ----
+let peer = null;
+let conn = null;
+let pendingData = null; // { type: 'image'|'text', data: ... }
+
+// ---- PeerJS 初期化 ----
+function initPeer() {
+  const id = String(Math.floor(1000 + Math.random() * 9000));
+  setStatus('waiting', '待機中...');
+
+  peer = new Peer(id, {
+    host: '0.peerjs.com',
+    port: 443,
+    secure: true,
+    path: '/'
+  });
+
+  peer.on('open', (id) => {
+    document.getElementById('my-id').textContent = id;
+    setStatus('waiting', '相手のIDを入力して接続してください');
+  });
+
+  peer.on('connection', (c) => {
+    setupConn(c);
+  });
+
+  peer.on('error', (err) => {
+    setStatus('error', 'エラー: ' + err.type);
+    toast('接続エラー: ' + err.type, 'err');
+  });
+}
+
+function setupConn(c) {
+  conn = c;
+  conn.on('open', () => {
+    setStatus('online', '接続中: ' + conn.peer);
+    document.getElementById('btn-connect').style.display = 'none';
+    document.getElementById('btn-disconnect').style.display = '';
+    document.getElementById('btn-send').disabled = (pendingData === null);
+    toast('接続しました ✓', 'ok');
+  });
+
+  conn.on('data', (data) => {
+    receiveContent(data);
+  });
+
+  conn.on('close', () => {
+    conn = null;
+    setStatus('waiting', '切断されました。再接続してください');
+    document.getElementById('btn-connect').style.display = '';
+    document.getElementById('btn-disconnect').style.display = 'none';
+    document.getElementById('btn-send').disabled = true;
+    toast('切断されました', 'err');
+  });
+}
+
+function connectToPeer() {
+  const peerId = document.getElementById('peer-input').value.trim();
+  if (!peerId || peerId.length !== 4) { toast('4桁のIDを入力してください', 'err'); return; }
+  if (!peer) { toast('初期化中です', 'err'); return; }
+  setStatus('waiting', '接続中...');
+  const c = peer.connect(peerId, { reliable: true });
+  setupConn(c);
+}
+
+function disconnect() {
+  if (conn) { conn.close(); conn = null; }
+  setStatus('waiting', '切断しました');
+  document.getElementById('btn-connect').style.display = '';
+  document.getElementById('btn-disconnect').style.display = 'none';
+  document.getElementById('btn-send').disabled = true;
+}
+
+// ---- ペースト処理 ----
+function onDropZoneFocus() {
+  // フォーカス時にヒントテキストを更新
+  document.getElementById('drop-hint1').innerHTML = '<strong>Ctrl+V でペースト</strong>';
+}
+
+function onPasteEvent(e) {
+  e.preventDefault();
+  const items = e.clipboardData.items;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = (ev) => setPreview('image', ev.target.result);
+      reader.readAsDataURL(blob);
+      return;
+    }
+  }
+  const text = e.clipboardData.getData('text');
+  if (text) {
+    setPreview('text', text);
+  } else {
+    toast('テキストか画像をコピーしてからペーストしてください', 'err');
+  }
+}
+
+// ドラッグ&ドロップ
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('dragover');
+}
+function onDragLeave(e) {
+  document.getElementById('drop-zone').classList.remove('dragover');
+}
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreview('image', ev.target.result);
+    reader.readAsDataURL(file);
+  } else if (e.dataTransfer.getData('text')) {
+    setPreview('text', e.dataTransfer.getData('text'));
+  }
+}
+
+function setPreview(type, data) {
+  pendingData = { type, data };
+  // ドロップゾーン内のヒントテキストを非表示
+  const icon = document.getElementById('drop-icon');
+  const hint1 = document.getElementById('drop-hint1');
+  const hint2 = document.getElementById('drop-hint2');
+  if (icon) icon.style.display = 'none';
+  if (hint1) hint1.style.display = 'none';
+  if (hint2) hint2.style.display = 'none';
+  document.getElementById('preview-wrap').style.display = '';
+  document.getElementById('drop-zone').classList.add('has-content');
+
+  if (type === 'image') {
+    document.getElementById('preview-img').src = data;
+    document.getElementById('preview-img').style.display = 'block';
+    document.getElementById('preview-text').style.display = 'none';
+  } else {
+    document.getElementById('preview-text').textContent = data;
+    document.getElementById('preview-text').style.display = 'block';
+    document.getElementById('preview-img').style.display = 'none';
+  }
+
+  if (conn && conn.open) document.getElementById('btn-send').disabled = false;
+}
+
+function clearContent() {
+  pendingData = null;
+  // ヒントテキストを再表示
+  const icon = document.getElementById('drop-icon');
+  const hint1 = document.getElementById('drop-hint1');
+  const hint2 = document.getElementById('drop-hint2');
+  if (icon) icon.style.display = '';
+  if (hint1) { hint1.style.display = ''; hint1.innerHTML = '<strong>クリックしてCtrl+V</strong>　または画像をドロップ'; }
+  if (hint2) hint2.style.display = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('preview-text').style.display = 'none';
+  document.getElementById('preview-img').src = '';
+  document.getElementById('preview-text').textContent = '';
+  document.getElementById('drop-zone').classList.remove('has-content');
+  document.getElementById('btn-send').disabled = true;
+}
+
+// ---- 送信 ----
+function sendContent() {
+  if (!conn || !conn.open) { toast('接続されていません', 'err'); return; }
+  if (!pendingData) { toast('送信するデータがありません', 'err'); return; }
+  conn.send(pendingData);
+  toast('送信しました ✓', 'ok');
+  clearContent();
+}
+
+// ---- 受信 ----
+function receiveContent(data) {
+  const list = document.getElementById('receive-list');
+  const empty = list.querySelector('.receive-empty');
+  if (empty) empty.remove();
+
+  const item = document.createElement('div');
+  item.className = 'received-item';
+
+  const time = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  if (data.type === 'image') {
+    const img = document.createElement('img');
+    img.src = data.data;
+    img.title = 'クリックでコピー';
+    img.onclick = () => copyImageFromSrc(data.data);
+    item.appendChild(img);
+  } else {
+    const p = document.createElement('div');
+    p.className = 'received-text';
+    p.textContent = data.data;
+    item.appendChild(p);
+  }
+
+  const meta = document.createElement('div');
+  meta.className = 'item-meta';
+  meta.innerHTML = `<span class="item-time">${time}</span>`;
+
+  const actions = document.createElement('div');
+  actions.style.display = 'flex';
+  actions.style.gap = '6px';
+
+  if (data.type === 'text') {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'btn btn-ghost';
+    copyBtn.style.padding = '6px 12px';
+    copyBtn.style.fontSize = '12px';
+    copyBtn.textContent = 'コピー';
+    copyBtn.onclick = () => { navigator.clipboard.writeText(data.data); toast('コピーしました ✓', 'ok'); };
+    actions.appendChild(copyBtn);
+  } else {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'btn btn-ghost';
+    copyBtn.style.padding = '6px 12px';
+    copyBtn.style.fontSize = '12px';
+    copyBtn.textContent = 'コピー';
+    copyBtn.onclick = () => copyImageFromSrc(data.data);
+    actions.appendChild(copyBtn);
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'btn btn-primary';
+    dlBtn.style.padding = '6px 12px';
+    dlBtn.style.fontSize = '12px';
+    dlBtn.textContent = 'ダウンロード';
+    dlBtn.onclick = () => downloadImage(data.data);
+    actions.appendChild(dlBtn);
+  }
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-danger';
+  delBtn.style.padding = '6px 12px';
+  delBtn.style.fontSize = '12px';
+  delBtn.textContent = '削除';
+  delBtn.onclick = () => item.remove();
+  actions.appendChild(delBtn);
+
+  meta.appendChild(actions);
+  item.appendChild(meta);
+  list.prepend(item);
+
+  toast(data.type === 'image' ? '画像を受信しました 📷' : 'テキストを受信しました', 'ok');
+}
+
+async function copyImageFromSrc(src) {
+  try {
+    const res = await fetch(src);
+    const blob = await res.blob();
+    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+    toast('画像をコピーしました ✓', 'ok');
+  } catch(e) {
+    toast('コピーできませんでした（ダウンロードを使ってください）', 'err');
+  }
+}
+
+function downloadImage(src) {
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = 'clip-' + Date.now() + '.png';
+  a.click();
+}
+
+// ---- UI ヘルパー ----
+function setStatus(state, text) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'dot ' + state;
+  document.getElementById('status-text').textContent = text;
+}
+
+function copyMyId() {
+  const id = document.getElementById('my-id').textContent;
+  if (id === '----') return;
+  navigator.clipboard.writeText(id);
+  toast('IDをコピーしました', 'ok');
+}
+
+let toastTimer = null;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 2500);
+}
+
+// ---- タブ切り替え ----
+let currentTab = 'paste';
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('pane-paste').style.display = tab === 'paste' ? '' : 'none';
+  document.getElementById('pane-text').style.display  = tab === 'text'  ? '' : 'none';
+  document.getElementById('tab-paste').className = tab === 'paste' ? 'btn btn-primary' : 'btn btn-ghost';
+  document.getElementById('tab-text').className  = tab === 'text'  ? 'btn btn-primary' : 'btn btn-ghost';
+  if (tab === 'text') { clearContent(); }
+  if (tab === 'paste') {
+    document.getElementById('direct-input').value = '';
+    pendingData = null;
+    document.getElementById('btn-send').disabled = true;
+  }
+}
+
+function onDirectInput() {
+  const val = document.getElementById('direct-input').value;
+  if (val.trim()) {
+    pendingData = { type: 'text', data: val };
+    if (conn && conn.open) document.getElementById('btn-send').disabled = false;
+  } else {
+    pendingData = null;
+    document.getElementById('btn-send').disabled = true;
+  }
+}
+
+// ---- 起動 ----
+initPeer();
+</script>
+</body>
+</html>
