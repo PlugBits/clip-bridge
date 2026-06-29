@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClipBridge</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -201,7 +201,7 @@
 <script>
 const SUPABASE_URL = 'https://ahrvesmafltdkrcjqfwh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnZlc21hZmx0ZGtyY2pxZndoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDU0MzUsImV4cCI6MjA5ODMyMTQzNX0.omwTTulKmH9WyRgo4AGVKEoAv1f3fzKesSudMFrafRo';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let channel = null;
 let currentRoom = null;
@@ -226,7 +226,7 @@ function joinRoom() {
   currentRoom = roomId;
   setStatus('waiting', '接続中...');
 
-  channel = supabase.channel('clip-' + roomId, {
+  channel = sb.channel('clip-' + roomId, {
     config: { broadcast: { self: false } }
   });
 
