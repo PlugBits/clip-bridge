@@ -11,12 +11,20 @@
     --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
     --accent: #5b7fff; --green: #3ecf8e; --red: #f04444;
     --text: #e8eaf0; --muted: #6b7280; --border: #2a2e42;
+    --field: #0f1117;
     --radius: 12px; --font: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f6; --surface: #ffffff; --surface2: #eef0f5;
+    --accent: #4066e0; --green: #17945e; --red: #d13b3b;
+    --text: #1b2030; --muted: #707888; --border: #dce0e9;
+    --field: #f6f8fc;
   }
   body {
     background: var(--bg); color: var(--text); font-family: var(--font);
     min-height: 100dvh; display: flex; flex-direction: column;
     align-items: center; padding: 20px 16px 48px;
+    transition: background 0.2s, color 0.2s;
   }
   header {
     width: 100%; max-width: 520px; display: flex;
@@ -49,21 +57,34 @@
   .btn-primary:hover:not(:disabled) { background: #6b8cff; }
   .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
   .btn-ghost:hover:not(:disabled) { border-color: var(--accent); }
-  .btn-danger  { background: #2a1a1a; color: var(--red); border: 1px solid #4a2020; }
+  .btn-danger  { background: rgba(240,68,68,0.12); color: var(--red); border: 1px solid rgba(240,68,68,0.35); }
   .btn-sm      { padding: 6px 12px; font-size: 12px; }
 
+  /* テーマ切替 */
+  .theme-toggle { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 10px; transition: border-color 0.15s; }
+  .theme-toggle:hover { border-color: var(--accent); }
+
   /* 接続 */
-  .code-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
-  .code-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; text-align: center; }
-  .code-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 34px; font-weight: 800; color: var(--accent); letter-spacing: 0.22em; text-align: center; outline: none; font-variant-numeric: tabular-nums; transition: border-color 0.15s; }
+  .code-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+  .code-label { font-size: 11px; color: var(--muted); margin-bottom: 7px; text-align: center; }
+  .code-input { width: 100%; background: var(--field); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 28px; font-weight: 800; color: var(--accent); letter-spacing: 0.2em; text-align: center; outline: none; font-variant-numeric: tabular-nums; transition: border-color 0.15s; }
   .code-input:focus { border-color: var(--accent); }
   .code-input::placeholder { color: var(--border); }
   .code-input:disabled { opacity: 0.7; }
-  .pass-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: 0.08em; text-align: center; outline: none; transition: border-color 0.15s; }
+  .pass-input { width: 100%; background: var(--field); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: 0.08em; text-align: center; outline: none; transition: border-color 0.15s; }
   .pass-input:focus { border-color: var(--accent); }
   .pass-input::placeholder { color: var(--muted); font-size: 14px; font-weight: 400; letter-spacing: 0; }
-  .code-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .code-actions { display: flex; gap: 6px; margin-top: 7px; }
   .code-actions .btn { flex: 1; }
+
+  /* 接続済みの折りたたみチップ */
+  .conn-toggle { margin-left: auto; display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--text); cursor: pointer; transition: border-color 0.15s; }
+  .conn-toggle:hover { border-color: var(--accent); }
+  .conn-toggle-cta { color: var(--muted); font-size: 11px; }
+  #conn-card.collapsed { padding-top: 14px; padding-bottom: 14px; }
+  #conn-card.collapsed .card-title { display: none; }
+  #conn-card.collapsed #conn-panel { display: none; }
+  #conn-card.collapsed .card-head { margin-bottom: 0; }
 
   .status-bar { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--surface2); border-radius: 8px; font-size: 13px; margin-top: 10px; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
@@ -154,6 +175,16 @@
   #toast.ok  { border-color: var(--green); color: var(--green); }
   #toast.err { border-color: var(--red);   color: var(--red); }
 </style>
+<script>
+  // テーマをレンダリング前に適用（ちらつき防止）
+  (function () {
+    try {
+      var t = localStorage.getItem('clipbridge_theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
 
@@ -163,35 +194,45 @@
   <div class="logo">📋</div>
   <h1>ClipBridge</h1>
   <span class="tagline">デバイス間でコピペ</span>
+  <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="表示モード切替">🌙</button>
 </header>
 
 <main class="layout">
 <div class="col-left">
 
 <!-- 接続 -->
-<div class="card">
-  <div class="card-title mb">接続</div>
-  <div class="code-block">
-    <div class="code-label">ルームコード（両方の端末で同じ番号を入力）</div>
-    <input class="code-input" id="room-input" placeholder="0000" maxlength="4" inputmode="numeric">
-    <div class="code-actions">
-      <button class="btn btn-ghost btn-sm" onclick="copyCode()">コピー</button>
-      <button class="btn btn-ghost btn-sm" onclick="newCode()">別の番号を生成</button>
-    </div>
+<div class="card" id="conn-card">
+  <div class="card-head">
+    <span class="card-title">接続</span>
+    <button class="conn-toggle" id="conn-toggle" onclick="toggleConnPanel()" style="display:none">
+      <span class="dot online" id="chip-dot"></span>
+      <span id="chip-text">接続中</span>
+      <span class="conn-toggle-cta" id="chip-cta">設定 ▾</span>
+    </button>
   </div>
-  <div class="code-block">
-    <div class="code-label">あいことば（暗号化キー・両端末で同じ）</div>
-    <input class="pass-input" id="pass-input" placeholder="あいことば" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <div class="code-actions">
-      <button class="btn btn-ghost btn-sm" onclick="copyPass()">コピー</button>
-      <button class="btn btn-ghost btn-sm" onclick="newPass()">別のあいことば</button>
+  <div id="conn-panel">
+    <div class="code-block">
+      <div class="code-label">ルームコード（両方の端末で同じ番号を入力）</div>
+      <input class="code-input" id="room-input" placeholder="0000" maxlength="4" inputmode="numeric">
+      <div class="code-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copyCode()">コピー</button>
+        <button class="btn btn-ghost btn-sm" onclick="newCode()">別の番号を生成</button>
+      </div>
     </div>
-  </div>
-  <button class="btn btn-primary" id="btn-join" onclick="joinRoom()" style="width:100%">接続</button>
-  <button class="btn btn-danger" id="btn-leave" onclick="leaveRoom()" style="width:100%;display:none;margin-top:8px">切断して履歴を削除</button>
-  <div class="status-bar">
-    <div class="dot" id="status-dot"></div>
-    <span id="status-text">準備中...</span>
+    <div class="code-block">
+      <div class="code-label">あいことば（暗号化キー・両端末で同じ）</div>
+      <input class="pass-input" id="pass-input" placeholder="あいことば" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="code-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copyPass()">コピー</button>
+        <button class="btn btn-ghost btn-sm" onclick="newPass()">別のあいことば</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-join" onclick="joinRoom()" style="width:100%">接続</button>
+    <button class="btn btn-danger" id="btn-leave" onclick="leaveRoom()" style="width:100%;display:none;margin-top:8px">切断して履歴を削除</button>
+    <div class="status-bar">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">準備中...</span>
+    </div>
   </div>
 </div>
 
@@ -371,6 +412,7 @@ function loadHist(room) {
 
 // ---- 初期化 ----
 window.addEventListener('load', () => {
+  applyThemeIcon();
   const saved = roomStore.getItem(SS_ROOM);
   const savedPass = roomStore.getItem(SS_PASS);
   document.getElementById('room-input').value = (saved && /^\d{4}$/.test(saved)) ? saved : randomCode();
@@ -449,11 +491,47 @@ async function joinRoom(forceRoomId) {
       if (pendingItems.length) document.getElementById('btn-send').disabled = false;
       document.getElementById('btn-leave').style.display = '';
       document.getElementById('timeline-tools').style.display = 'flex';
+      document.getElementById('chip-text').textContent = 'ルーム ' + roomId;
+      document.getElementById('chip-dot').className = 'dot online';
+      updateConnUI(true); // 接続済み → 接続カードを畳む
       toast('接続しました ✓', 'ok');
     } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
       setStatus('error', '切断されました');
+      document.getElementById('chip-dot').className = 'dot error';
+      updateConnUI(false); // エラー時は設定を開いて見せる
     }
   });
+}
+
+// 接続カードの折りたたみ制御
+function updateConnUI(connected) {
+  const card = document.getElementById('conn-card');
+  const toggle = document.getElementById('conn-toggle');
+  if (connected) {
+    card.classList.add('collapsed');
+    toggle.style.display = 'flex';
+    document.getElementById('chip-cta').textContent = '設定 ▾';
+  } else {
+    card.classList.remove('collapsed');
+    toggle.style.display = 'none';
+  }
+}
+function toggleConnPanel() {
+  const card = document.getElementById('conn-card');
+  card.classList.toggle('collapsed');
+  document.getElementById('chip-cta').textContent = card.classList.contains('collapsed') ? '設定 ▾' : '閉じる ▴';
+}
+
+// テーマ切替
+function applyThemeIcon() {
+  const light = document.documentElement.dataset.theme === 'light';
+  document.getElementById('theme-toggle').textContent = light ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem('clipbridge_theme', next); } catch (e) {}
+  applyThemeIcon();
 }
 
 // ---- サーバーの暗号バッファを取り込む（既存のローカル履歴へマージ） ----
@@ -983,6 +1061,7 @@ async function leaveRoom() {
   setStatus('waiting', '相手と同じ番号・あいことばで「接続」してください');
   document.getElementById('btn-leave').style.display = 'none';
   document.getElementById('timeline-tools').style.display = 'none';
+  updateConnUI(false); // 接続カードを展開状態に戻す
   messages = []; seen = new Set();
   renderAll();
   document.getElementById('btn-send').disabled = true;
