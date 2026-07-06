@@ -205,7 +205,9 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const LS_ROOM = 'clipbridge_room';
+// タブ単位のセッション。リロードでは維持され、タブを閉じると破棄される。
+const SS_ROOM = 'clipbridge_room';
+const roomStore = window.sessionStorage;
 
 let channel = null;
 let currentRoom = null;
@@ -223,7 +225,7 @@ function randomCode() { return String(Math.floor(1000 + Math.random() * 9000)); 
 
 // ---- 初期化 ----
 window.addEventListener('load', () => {
-  const saved = localStorage.getItem(LS_ROOM);
+  const saved = roomStore.getItem(SS_ROOM);
   document.getElementById('room-input').value = (saved && /^\d{4}$/.test(saved)) ? saved : randomCode();
 
   if (isIOS) {
@@ -271,7 +273,7 @@ async function joinRoom(forceRoomId) {
   if (!roomId || !/^\d{4}$/.test(roomId)) { toast('4桁の番号を入力してください', 'err'); return; }
   if (channel) { await channel.unsubscribe(); channel = null; }
   currentRoom = roomId;
-  localStorage.setItem(LS_ROOM, roomId);
+  roomStore.setItem(SS_ROOM, roomId);
   setStatus('waiting', '接続中...');
 
   await loadTimeline(roomId);
@@ -630,7 +632,7 @@ async function leaveRoom() {
   await sb.from('clips').delete().eq('room_id', currentRoom);
   if (channel) { await channel.unsubscribe(); channel = null; }
   currentRoom = null;
-  localStorage.removeItem(LS_ROOM);
+  roomStore.removeItem(SS_ROOM);
   setStatus('waiting', '相手と同じ番号を入力して「接続」してください');
   document.getElementById('btn-leave').style.display = 'none';
   document.getElementById('timeline-tools').style.display = 'none';
