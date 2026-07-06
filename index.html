@@ -332,8 +332,10 @@ const QUALITY = {
 
 // タイムラインの単一データソース（新しい順で表示）
 let messages = [];          // { key, type, data, ts(ms), mine }
-let seen = new Set();        // 重複排除用キー
+let seen = new Set();        // 重複排除用キー（メッセージID）
+let seenRows = new Set();     // 取り込み済みDB行ID（ポーリングの差分検出用）
 let autoOpenItem = null;     // 受信時に自動展開中の1件（常に最新のみ）
+let pollTimer = null;        // アクティブ時の新着ポーリング
 
 function uid() {
   return (crypto.randomUUID && crypto.randomUUID()) ||
@@ -476,7 +478,7 @@ async function joinRoom(forceRoomId) {
   catch (e) { setStatus('error', '鍵の生成に失敗しました'); toast('鍵の生成に失敗しました', 'err'); return; }
 
   // まずローカル履歴を即時復元 → そのあとサーバーの暗号バッファを取り込む
-  messages = []; seen = new Set(); autoOpenItem = null;
+  messages = []; seen = new Set(); seenRows = new Set(); autoOpenItem = null;
   loadHist(roomId);
   renderAll();
   await loadTimeline(roomId);
@@ -494,6 +496,7 @@ async function joinRoom(forceRoomId) {
       document.getElementById('chip-text').textContent = 'ルーム ' + roomId;
       document.getElementById('chip-dot').className = 'dot online';
       updateConnUI(true); // 接続済み → 接続カードを畳む
+      startPolling();     // アクティブ中は新着を数秒ごとに取り込む
       toast('接続しました ✓', 'ok');
     } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
       setStatus('error', '切断されました');
@@ -548,25 +551,61 @@ async function loadTimeline(roomId) {
 
   let fail = 0;
   for (const row of (data || [])) {
-    if (row.type === 'enc') {
-      let obj = null;
-      try { obj = await decryptStr(row.data); } catch (e) { obj = null; }
-      if (!obj) { fail++; continue; }
-      addMessage(buildMsgFromObj(obj, { mine: false }), false);
-    } else {
-      // 旧・平文データ（互換のため表示）
-      const base = { key: 'db:' + (row.id != null ? row.id : row.created_at), ts: Date.parse(row.created_at) || Date.now(), mine: false };
-      if (row.type === 'group') {
-        let its = []; try { its = JSON.parse(row.data) || []; } catch { its = []; }
-        addMessage({ ...base, type: 'group', items: its }, false);
-      } else {
-        addMessage({ ...base, type: row.type, data: row.data }, false);
-      }
-    }
+    if (row.id != null) seenRows.add(row.id); // ポーリングの再処理を防ぐ
+    const msg = await rowToMsg(row, { mine: false });
+    if (msg === 'FAIL') { fail++; continue; }
+    if (msg) addMessage(msg, false);
   }
   renderAll(); // 取得時は展開しない（展開は受信時のみ）
   persistHist();
   if (fail > 0) toast(fail + '件は別のあいことばのため表示できません', 'err');
+}
+
+// DB行 → メッセージ（復号できない暗号行は 'FAIL'）
+async function rowToMsg(row, extra) {
+  if (row.type === 'enc') {
+    let obj = null;
+    try { obj = await decryptStr(row.data); } catch (e) { obj = null; }
+    if (!obj) return 'FAIL';
+    return buildMsgFromObj(obj, extra);
+  }
+  // 旧・平文データ（互換のため表示）
+  const base = { key: 'db:' + (row.id != null ? row.id : row.created_at), ts: Date.parse(row.created_at) || Date.now(), ...extra };
+  if (row.type === 'group') {
+    let its = []; try { its = JSON.parse(row.data) || []; } catch { its = []; }
+    return { ...base, type: 'group', items: its };
+  }
+  return { ...base, type: row.type, data: row.data };
+}
+
+// アクティブ中は数秒ごとにサーバーの新着だけ取り込む（broadcast取りこぼしの保険）
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(() => {
+    if (currentRoom && document.visibilityState === 'visible') pollNew(currentRoom);
+  }, 4000);
+}
+function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+async function pollNew(roomId) {
+  let data = null;
+  try {
+    const cutoff = new Date(Date.now() - RETENTION_MS).toISOString();
+    const res = await sb.from('clips').select('*').eq('room_id', roomId)
+      .gte('created_at', cutoff).order('created_at', { ascending: true }); // 古い→新しい順（最新が最後に展開される）
+    data = res.data;
+  } catch (e) { return; }
+  if (!data) return;
+  const fresh = data.filter(r => r.id == null || !seenRows.has(r.id));
+  if (!fresh.length) return;
+  let added = 0;
+  for (const row of fresh) {
+    if (row.id != null) seenRows.add(row.id);
+    const msg = await rowToMsg(row, { mine: false, incoming: true });
+    if (!msg || msg === 'FAIL') continue;
+    if (addMessage(msg)) added++; // incoming → renderAt で自動展開（常に最新1件）
+  }
+  if (added > 0) { persistHist(); toast(added > 1 ? added + '件の新着' : '新着メッセージ', 'ok'); }
 }
 
 function reloadTimeline() {
@@ -1052,6 +1091,7 @@ async function downloadAllImages() {
 async function leaveRoom() {
   if (!currentRoom) return;
   const room = currentRoom;
+  stopPolling();
   await sb.from('clips').delete().eq('room_id', room);
   if (channel) { await channel.unsubscribe(); channel = null; }
   roomStore.removeItem(SS_ROOM);
@@ -1062,7 +1102,7 @@ async function leaveRoom() {
   document.getElementById('btn-leave').style.display = 'none';
   document.getElementById('timeline-tools').style.display = 'none';
   updateConnUI(false); // 接続カードを展開状態に戻す
-  messages = []; seen = new Set();
+  messages = []; seen = new Set(); seenRows = new Set();
   renderAll();
   document.getElementById('btn-send').disabled = true;
   toast('切断して履歴を削除しました', 'ok');
