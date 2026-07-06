@@ -229,9 +229,8 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platfor
 // タブ単位のセッション。リロードでは維持され、タブを閉じると破棄される。
 const SS_ROOM = 'clipbridge_room';
 const roomStore = window.sessionStorage;
-// 取得直後は数秒だけ開いた状態にしておく（新しい方から最大この件数）
+// 受信時のみ、最新の1件を数秒だけ開いた状態にしておく
 const AUTO_OPEN_MS = 6000;
-const AUTO_OPEN_MAX = 6;
 
 let channel = null;
 let currentRoom = null;
@@ -240,6 +239,7 @@ let pendingData = null;
 // タイムラインの単一データソース（新しい順で表示）
 let messages = [];          // { key, type, data, ts(ms), mine }
 let seen = new Set();        // 重複排除用キー
+let autoOpenItem = null;     // 受信時に自動展開中の1件（常に最新のみ）
 
 function uid() {
   return (crypto.randomUUID && crypto.randomUUID()) ||
@@ -347,7 +347,7 @@ async function loadTimeline(roomId) {
       mine: false
     }, false);
   });
-  renderAll(true); // 取得直後は数秒間だけ開いた状態で表示
+  renderAll(); // 取得時は展開しない（展開は受信時のみ）
   if (data && data.length) toast('履歴 ' + data.length + '件を取得', 'ok');
 }
 
@@ -502,15 +502,16 @@ async function sendContent() {
 }
 
 // ---- レンダリング ----
-function renderAll(autoOpen = false) {
+function renderAll() {
   const list = document.getElementById('message-list');
+  autoOpenItem = null; // 作り直すので参照をリセット
   list.innerHTML = '';
   if (messages.length === 0) {
     list.innerHTML = '<div class="receive-empty">' +
       (currentRoom ? 'まだ送受信はありません' : '接続すると、送受信した内容がここに新しい順で表示されます') +
       '</div>';
   } else {
-    messages.forEach((m, i) => list.appendChild(buildItem(m, autoOpen && i < AUTO_OPEN_MAX)));
+    messages.forEach(m => list.appendChild(buildItem(m)));
   }
   updateMeta();
 }
@@ -616,18 +617,27 @@ function buildItem(m, autoOpen = false) {
   }));
   body.appendChild(actions);
 
-  // 取得/受信直後は数秒だけ開いておき、その後自動で閉じる
+  // 受信時のみ、最新の1件だけを数秒だけ開いておき、その後自動で閉じる
   if (autoOpen) {
+    if (autoOpenItem) { // それ以前に自動展開したものは閉じる（常に最新の1件のみ）
+      clearTimeout(autoOpenItem.timer);
+      autoOpenItem.body.classList.remove('open');
+      autoOpenItem.chevron.classList.remove('open');
+    }
     body.classList.add('open');
     chevron.classList.add('open');
-    item._collapseTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       body.classList.remove('open');
       chevron.classList.remove('open');
+      if (autoOpenItem && autoOpenItem.timer === timer) autoOpenItem = null;
     }, AUTO_OPEN_MS);
+    item._collapseTimer = timer;
+    autoOpenItem = { body, chevron, timer };
   }
 
   header.addEventListener('click', () => {
     clearTimeout(item._collapseTimer); // 手動操作したら自動開閉を止める
+    if (autoOpenItem && autoOpenItem.timer === item._collapseTimer) autoOpenItem = null;
     const open = body.classList.toggle('open');
     chevron.classList.toggle('open', open);
   });
