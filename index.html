@@ -142,6 +142,9 @@
   .item-body img { max-width: 100%; max-height: 300px; border-radius: 6px; object-fit: contain; display: block; margin-bottom: 8px; }
   .item-body-text { font-size: 14px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; margin-bottom: 8px; }
   .actions { display: flex; gap: 5px; flex-wrap: wrap; }
+  .body-block { margin-bottom: 12px; }
+  .body-block:last-of-type { margin-bottom: 8px; }
+  .group-actions { border-top: 1px solid var(--border); padding-top: 10px; }
 
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 9px 18px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; white-space: nowrap; z-index: 999; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -374,13 +377,18 @@ async function loadTimeline(roomId) {
 
   if (error) { updateMeta(); return; }
   (data || []).forEach(row => {
-    addMessage({
+    const base = {
       key: 'db:' + (row.id != null ? row.id : row.created_at),
-      type: row.type,
-      data: row.data,
       ts: Date.parse(row.created_at) || Date.now(),
       mine: false
-    }, false);
+    };
+    if (row.type === 'group') {
+      let its = [];
+      try { its = JSON.parse(row.data) || []; } catch { its = []; }
+      addMessage({ ...base, type: 'group', items: its }, false);
+    } else {
+      addMessage({ ...base, type: row.type, data: row.data }, false);
+    }
   });
   renderAll(); // 取得時は展開しない（展開は受信時のみ）
   if (data && data.length) toast('履歴 ' + data.length + '件を取得', 'ok');
@@ -404,15 +412,15 @@ function addMessage(msg, doRender = true) {
 
 // リアルタイム受信（相手から）
 function receiveMessage(payload) {
-  const added = addMessage({
-    key: 'rt:' + (payload.id || uid()),
-    type: payload.type,
-    data: payload.data,
-    ts: Date.parse(payload.ts) || Date.now(),
-    mine: false,
-    incoming: true
-  });
-  if (added) toast(payload.type === 'image' ? '画像を受信しました 📷' : 'テキストを受信しました', 'ok');
+  const base = { key: 'rt:' + (payload.id || uid()), ts: Date.parse(payload.ts) || Date.now(), mine: false, incoming: true };
+  const isGroup = payload.type === 'group';
+  const added = isGroup
+    ? addMessage({ ...base, type: 'group', items: payload.items || [] })
+    : addMessage({ ...base, type: payload.type, data: payload.data });
+  if (added) {
+    if (isGroup) toast((payload.items || []).length + '件を受信しました', 'ok');
+    else toast(payload.type === 'image' ? '画像を受信しました 📷' : 'テキストを受信しました', 'ok');
+  }
 }
 
 // ---- DB保存 ----
@@ -606,17 +614,24 @@ function onDirectInput() {
 async function sendContent() {
   if (!channel || !currentRoom) { toast('接続されていません', 'err'); return; }
   if (!pendingItems.length) { toast('送信するデータがありません', 'err'); return; }
-  const batch = pendingItems.slice();
+  const batch = pendingItems.map(it => ({ type: it.type, data: it.data }));
   document.getElementById('btn-send').disabled = true;
-  for (const it of batch) {
-    const id = uid();
-    const ts = new Date().toISOString();
+  const id = uid();
+  const ts = new Date().toISOString();
+  if (batch.length === 1) {
+    const it = batch[0];
     const payload = { id, type: it.type, data: it.data, ts };
     try { await channel.send({ type: 'broadcast', event: 'clip', payload }); } catch (e) { /* 続行 */ }
     await saveToDb(currentRoom, it.type, it.data);
     addMessage({ key: 'rt:' + id, type: it.type, data: it.data, ts: Date.now(), mine: true });
+  } else {
+    // 複数はまとめて1件（グループ）として送信・保存
+    const payload = { id, type: 'group', items: batch, ts };
+    try { await channel.send({ type: 'broadcast', event: 'clip', payload }); } catch (e) { /* 続行 */ }
+    await saveToDb(currentRoom, 'group', JSON.stringify(batch));
+    addMessage({ key: 'rt:' + id, type: 'group', items: batch, ts: Date.now(), mine: true });
   }
-  toast(batch.length > 1 ? batch.length + '件を送信しました ✓' : '送信しました ✓', 'ok');
+  toast(batch.length > 1 ? batch.length + '件をまとめて送信しました ✓' : '送信しました ✓', 'ok');
   clearContent();
   if (document.getElementById('pane-text').style.display !== 'none') {
     document.getElementById('direct-input').value = '';
@@ -653,7 +668,7 @@ function updateMeta() {
   document.getElementById('timeline-meta').textContent =
     messages.length ? messages.length + '件（過去1時間）' : '';
   const dl = document.getElementById('btn-dl-all');
-  if (dl) dl.style.display = messages.some(m => m.type === 'image') ? '' : 'none';
+  if (dl) dl.style.display = messages.some(m => msgImages(m).length > 0) ? '' : 'none';
 }
 
 function fmtTime(ms) {
@@ -664,7 +679,8 @@ function fmtTime(ms) {
 }
 
 function buildItem(m, autoOpen = false) {
-  const isImg = m.type === 'image';
+  const items = msgItems(m);
+  const imgs = items.filter(x => x.type === 'image');
   const item = document.createElement('div');
   item.className = 'msg-item' + (m.mine ? ' mine' : '');
 
@@ -686,51 +702,72 @@ function buildItem(m, autoOpen = false) {
     header.appendChild(b);
   }
 
-  if (isImg) {
+  // ---- ヘッダーのサムネ／プレビュー ----
+  const isSingleText = items.length === 1 && items[0].type === 'text';
+  if (imgs.length) {
     const thumb = document.createElement('img');
-    thumb.className = 'item-thumb'; thumb.src = m.data;
+    thumb.className = 'item-thumb'; thumb.src = imgs[0].data;
     header.appendChild(thumb);
     const prev = document.createElement('span');
-    prev.className = 'item-preview img'; prev.textContent = '画像';
+    prev.className = 'item-preview img';
+    prev.textContent = items.length > 1
+      ? (imgs.length === items.length ? '画像 ' + imgs.length + '枚' : '画像 ' + imgs.length + '枚 ＋ テキスト')
+      : '画像';
     header.appendChild(prev);
   } else {
     const prev = document.createElement('span');
     prev.className = 'item-preview';
-    prev.textContent = m.data.split('\n').join(' ');
+    prev.textContent = items.length > 1 ? 'テキスト ' + items.length + '件' : items[0].data.split('\n').join(' ');
     header.appendChild(prev);
-    const wrap = document.createElement('div');
-    wrap.className = 'item-actions-inline';
-    wrap.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', (e) => {
-      e.stopPropagation();
-      navigator.clipboard.writeText(m.data);
-      toast('コピーしました ✓', 'ok');
-    }));
-    header.appendChild(wrap);
+    if (isSingleText) {
+      const wrap = document.createElement('div');
+      wrap.className = 'item-actions-inline';
+      wrap.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(items[0].data);
+        toast('コピーしました ✓', 'ok');
+      }));
+      header.appendChild(wrap);
+    }
   }
 
   const chevron = document.createElement('span');
   chevron.className = 'item-chevron'; chevron.textContent = '▼';
   header.appendChild(chevron);
 
+  // ---- 展開ボディ：各アイテムを個別に表示 ----
   const body = document.createElement('div');
   body.className = 'item-body';
-  if (isImg) {
-    const img = document.createElement('img'); img.src = m.data;
-    body.appendChild(img);
-  } else {
-    const p = document.createElement('div');
-    p.className = 'item-body-text'; p.textContent = m.data;
-    body.appendChild(p);
-  }
+  items.forEach((it, i) => {
+    const block = document.createElement('div');
+    block.className = 'body-block';
+    if (it.type === 'image') {
+      const img = document.createElement('img'); img.src = it.data;
+      block.appendChild(img);
+      const acts = document.createElement('div'); acts.className = 'actions';
+      if (!isIOS) acts.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', () => copyImage(it.data)));
+      acts.appendChild(mkBtn('ダウンロード', 'btn-primary btn-sm', () => downloadImage(it.data, i)));
+      block.appendChild(acts);
+    } else {
+      const p = document.createElement('div');
+      p.className = 'item-body-text'; p.textContent = it.data;
+      block.appendChild(p);
+      const acts = document.createElement('div'); acts.className = 'actions';
+      acts.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', () => {
+        navigator.clipboard.writeText(it.data); toast('コピーしました ✓', 'ok');
+      }));
+      block.appendChild(acts);
+    }
+    body.appendChild(block);
+  });
 
+  // ---- グループ全体の一括DL／削除 ----
   const actions = document.createElement('div');
-  actions.className = 'actions';
-  if (isImg) {
-    if (!isIOS) actions.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', () => copyImage(m.data)));
-    actions.appendChild(mkBtn('ダウンロード', 'btn-primary btn-sm', () => downloadImage(m.data)));
-  } else {
-    actions.appendChild(mkBtn('コピー', 'btn-ghost btn-sm', () => {
-      navigator.clipboard.writeText(m.data); toast('コピーしました ✓', 'ok');
+  actions.className = 'actions group-actions';
+  if (imgs.length > 1) {
+    actions.appendChild(mkBtn('⬇️ 全て保存 (' + imgs.length + ')', 'btn-primary btn-sm', () => {
+      toast(imgs.length + '枚をダウンロードします', 'ok');
+      downloadImages(imgs.map(x => x.data));
     }));
   }
   actions.appendChild(mkBtn('表示を削除', 'btn-danger btn-sm', () => {
@@ -771,6 +808,10 @@ function buildItem(m, autoOpen = false) {
   return item;
 }
 
+// メッセージ（単体 or グループ）を共通のアイテム配列として扱う
+function msgItems(m) { return m.type === 'group' ? (m.items || []) : [{ type: m.type, data: m.data }]; }
+function msgImages(m) { return msgItems(m).filter(x => x.type === 'image').map(x => x.data); }
+
 function mkBtn(label, cls, fn) {
   const b = document.createElement('button');
   b.className = 'btn ' + cls; b.textContent = label; b.onclick = fn; return b;
@@ -801,15 +842,20 @@ function downloadImage(src, idx = 0) {
   a.download = 'clip-' + Date.now() + '-' + idx + '.' + ext; a.click();
 }
 
-// タイムライン上の画像を1枚ずつまとめてダウンロード（ZIPにはしない）
-async function downloadAllImages() {
-  const imgs = messages.filter(m => m.type === 'image');
-  if (!imgs.length) { toast('画像がありません', 'err'); return; }
-  toast(imgs.length + '枚をダウンロードします', 'ok');
-  for (let i = 0; i < imgs.length; i++) {
-    downloadImage(imgs[i].data, i);
+// 画像を1枚ずつ順番にダウンロード（ZIPにはしない）
+async function downloadImages(list) {
+  for (let i = 0; i < list.length; i++) {
+    downloadImage(list[i], i);
     await new Promise(r => setTimeout(r, 350)); // 連続DLがブロックされないよう間隔
   }
+}
+
+// タイムライン全体の画像をまとめてダウンロード
+async function downloadAllImages() {
+  const imgs = messages.flatMap(msgImages);
+  if (!imgs.length) { toast('画像がありません', 'err'); return; }
+  toast(imgs.length + '枚をダウンロードします', 'ok');
+  await downloadImages(imgs);
 }
 
 async function leaveRoom() {
