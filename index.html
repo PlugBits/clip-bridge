@@ -59,6 +59,9 @@
   .code-input:focus { border-color: var(--accent); }
   .code-input::placeholder { color: var(--border); }
   .code-input:disabled { opacity: 0.7; }
+  .pass-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: 0.08em; text-align: center; outline: none; transition: border-color 0.15s; }
+  .pass-input:focus { border-color: var(--accent); }
+  .pass-input::placeholder { color: var(--muted); font-size: 14px; font-weight: 400; letter-spacing: 0; }
   .code-actions { display: flex; gap: 6px; margin-top: 8px; }
   .code-actions .btn { flex: 1; }
 
@@ -176,6 +179,14 @@
       <button class="btn btn-ghost btn-sm" onclick="newCode()">別の番号を生成</button>
     </div>
   </div>
+  <div class="code-block">
+    <div class="code-label">あいことば（暗号化キー・両端末で同じ）</div>
+    <input class="pass-input" id="pass-input" placeholder="あいことば" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="code-actions">
+      <button class="btn btn-ghost btn-sm" onclick="copyPass()">コピー</button>
+      <button class="btn btn-ghost btn-sm" onclick="newPass()">別のあいことば</button>
+    </div>
+  </div>
   <button class="btn btn-primary" id="btn-join" onclick="joinRoom()" style="width:100%">接続</button>
   <button class="btn btn-danger" id="btn-leave" onclick="leaveRoom()" style="width:100%;display:none;margin-top:8px">切断して履歴を削除</button>
   <div class="status-bar">
@@ -258,12 +269,16 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 // タブ単位のセッション。リロードでは維持され、タブを閉じると破棄される。
 const SS_ROOM = 'clipbridge_room';
+const SS_PASS = 'clipbridge_pass';
 const roomStore = window.sessionStorage;
 // 受信時のみ、最新の1件を数秒だけ開いた状態にしておく
 const AUTO_OPEN_MS = 6000;
+// サーバー側の暗号バッファ保持時間（取りこぼし回収用）
+const RETENTION_MS = 10 * 60 * 1000;
 
 let channel = null;
 let currentRoom = null;
+let cryptoKey = null;        // あいことばから導出したAES-GCM鍵（サーバーには送らない）
 let pendingItems = [];       // 送信待ちの添付（複数可）{ type, data, orig? }
 let quality = 'standard';    // 画像の容量: light / standard / original
 
@@ -284,11 +299,82 @@ function uid() {
     (Date.now().toString(36) + Math.random().toString(36).slice(2));
 }
 function randomCode() { return String(Math.floor(1000 + Math.random() * 9000)); }
+function randomPass() {
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789'; // 紛らわしい文字を除外
+  let s = ''; const r = crypto.getRandomValues(new Uint8Array(6));
+  for (let i = 0; i < 6; i++) s += chars[r[i] % chars.length];
+  return s;
+}
+
+// ---- E2E暗号化（WebCrypto / AES-GCM + PBKDF2） ----
+function b64(u8) {
+  let s = ''; const CH = 0x8000;
+  for (let i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, i + CH));
+  return btoa(s);
+}
+function fromB64(str) {
+  const bin = atob(str); const u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return u8;
+}
+async function deriveKey(passphrase, roomId) {
+  const enc = new TextEncoder();
+  const base = await crypto.subtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode('clipbridge:' + roomId), iterations: 150000, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+  );
+}
+async function encryptObj(obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new TextEncoder().encode(JSON.stringify(obj));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, data);
+  return 'v1:' + b64(iv) + ':' + b64(new Uint8Array(ct));
+}
+async function decryptStr(blob) {
+  if (!blob || blob.slice(0, 3) !== 'v1:') return null; // 平文/非対応形式
+  const parts = blob.split(':');
+  const iv = fromB64(parts[1]); const ct = fromB64(parts[2]);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, ct);
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+// 復号済みオブジェクト → タイムライン用メッセージ
+function buildMsgFromObj(obj, extra) {
+  const ts = Date.parse(obj.ts) || Date.now();
+  const base = Object.assign({ key: 'msg:' + obj.id, ts }, extra);
+  return obj.t === 'group'
+    ? Object.assign(base, { type: 'group', items: obj.items || [] })
+    : Object.assign(base, { type: obj.t, data: obj.d });
+}
+
+// ---- ローカル履歴（端末内・sessionStorage） ----
+function histKey(room) { return 'clipbridge_hist_' + room; }
+function persistHist() {
+  if (!currentRoom) return;
+  try {
+    let arr = messages.slice(0, 60);
+    let s = JSON.stringify(arr);
+    while (s.length > 3000000 && arr.length > 1) { arr = arr.slice(0, Math.floor(arr.length / 2)); s = JSON.stringify(arr); }
+    roomStore.setItem(histKey(currentRoom), s);
+  } catch (e) { /* 容量超過などは黙って諦める */ }
+}
+function loadHist(room) {
+  try {
+    const s = roomStore.getItem(histKey(room));
+    if (!s) return;
+    const arr = JSON.parse(s) || [];
+    arr.forEach(m => { if (m && m.key && !seen.has(m.key)) { seen.add(m.key); messages.push(m); } });
+    messages.sort((a, b) => b.ts - a.ts);
+  } catch (e) { /* 無視 */ }
+}
 
 // ---- 初期化 ----
 window.addEventListener('load', () => {
   const saved = roomStore.getItem(SS_ROOM);
+  const savedPass = roomStore.getItem(SS_PASS);
   document.getElementById('room-input').value = (saved && /^\d{4}$/.test(saved)) ? saved : randomCode();
+  document.getElementById('pass-input').value = savedPass || randomPass();
 
   if (isIOS) {
     document.getElementById('ios-paste-area').style.display = 'block';
@@ -311,11 +397,11 @@ window.addEventListener('load', () => {
     }, 50);
   });
 
-  if (saved && /^\d{4}$/.test(saved)) {
+  if (saved && /^\d{4}$/.test(saved) && savedPass) {
     setStatus('waiting', '前回のルームに再接続中...');
     joinRoom(saved);
   } else {
-    setStatus('waiting', '相手と同じ番号を入力して「接続」してください');
+    setStatus('waiting', '相手と同じ番号・あいことばで「接続」してください');
   }
 });
 
@@ -335,12 +421,22 @@ document.addEventListener('visibilitychange', () => {
 // ---- ルーム参加 ----
 async function joinRoom(forceRoomId) {
   const roomId = forceRoomId || document.getElementById('room-input').value.trim();
+  const pass = document.getElementById('pass-input').value.trim();
   if (!roomId || !/^\d{4}$/.test(roomId)) { toast('4桁の番号を入力してください', 'err'); return; }
+  if (!pass) { toast('あいことばを入力してください', 'err'); return; }
   if (channel) { await channel.unsubscribe(); channel = null; }
   currentRoom = roomId;
   roomStore.setItem(SS_ROOM, roomId);
+  roomStore.setItem(SS_PASS, pass);
   setStatus('waiting', '接続中...');
 
+  try { cryptoKey = await deriveKey(pass, roomId); }
+  catch (e) { setStatus('error', '鍵の生成に失敗しました'); toast('鍵の生成に失敗しました', 'err'); return; }
+
+  // まずローカル履歴を即時復元 → そのあとサーバーの暗号バッファを取り込む
+  messages = []; seen = new Set(); autoOpenItem = null;
+  loadHist(roomId);
+  renderAll();
   await loadTimeline(roomId);
 
   channel = sb.channel('clip-' + roomId, { config: { broadcast: { self: false } } });
@@ -360,38 +456,39 @@ async function joinRoom(forceRoomId) {
   });
 }
 
-// ---- タイムライン取得（DBが全記録の単一ソース） ----
+// ---- サーバーの暗号バッファを取り込む（既存のローカル履歴へマージ） ----
 async function loadTimeline(roomId) {
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const cutoff = new Date(Date.now() - RETENTION_MS).toISOString();
   const { data, error } = await sb
     .from('clips')
     .select('*')
     .eq('room_id', roomId)
-    .gte('created_at', oneHourAgo)
+    .gte('created_at', cutoff)
     .order('created_at', { ascending: false });
 
-  // まっさらから作り直す（重複・順序破綻を防ぐ）
-  messages = [];
-  seen = new Set();
-  renderAll();
-
   if (error) { updateMeta(); return; }
-  (data || []).forEach(row => {
-    const base = {
-      key: 'db:' + (row.id != null ? row.id : row.created_at),
-      ts: Date.parse(row.created_at) || Date.now(),
-      mine: false
-    };
-    if (row.type === 'group') {
-      let its = [];
-      try { its = JSON.parse(row.data) || []; } catch { its = []; }
-      addMessage({ ...base, type: 'group', items: its }, false);
+
+  let fail = 0;
+  for (const row of (data || [])) {
+    if (row.type === 'enc') {
+      let obj = null;
+      try { obj = await decryptStr(row.data); } catch (e) { obj = null; }
+      if (!obj) { fail++; continue; }
+      addMessage(buildMsgFromObj(obj, { mine: false }), false);
     } else {
-      addMessage({ ...base, type: row.type, data: row.data }, false);
+      // 旧・平文データ（互換のため表示）
+      const base = { key: 'db:' + (row.id != null ? row.id : row.created_at), ts: Date.parse(row.created_at) || Date.now(), mine: false };
+      if (row.type === 'group') {
+        let its = []; try { its = JSON.parse(row.data) || []; } catch { its = []; }
+        addMessage({ ...base, type: 'group', items: its }, false);
+      } else {
+        addMessage({ ...base, type: row.type, data: row.data }, false);
+      }
     }
-  });
+  }
   renderAll(); // 取得時は展開しない（展開は受信時のみ）
-  if (data && data.length) toast('履歴 ' + data.length + '件を取得', 'ok');
+  persistHist();
+  if (fail > 0) toast(fail + '件は別のあいことばのため表示できません', 'err');
 }
 
 function reloadTimeline() {
@@ -410,24 +507,27 @@ function addMessage(msg, doRender = true) {
   return true;
 }
 
-// リアルタイム受信（相手から）
-function receiveMessage(payload) {
-  const base = { key: 'rt:' + (payload.id || uid()), ts: Date.parse(payload.ts) || Date.now(), mine: false, incoming: true };
-  const isGroup = payload.type === 'group';
-  const added = isGroup
-    ? addMessage({ ...base, type: 'group', items: payload.items || [] })
-    : addMessage({ ...base, type: payload.type, data: payload.data });
+// リアルタイム受信（相手から）＝暗号文を復号してから追加
+async function receiveMessage(payload) {
+  if (!payload || !payload.enc) return;
+  let obj = null;
+  try { obj = await decryptStr(payload.enc); } catch (e) { obj = null; }
+  if (!obj) { toast('別のあいことばのメッセージを受信しました', 'err'); return; }
+  const added = addMessage(buildMsgFromObj(obj, { mine: false, incoming: true }));
   if (added) {
-    if (isGroup) toast((payload.items || []).length + '件を受信しました', 'ok');
-    else toast(payload.type === 'image' ? '画像を受信しました 📷' : 'テキストを受信しました', 'ok');
+    persistHist();
+    const isGroup = obj.t === 'group';
+    const n = isGroup ? (obj.items || []).length : 1;
+    const hasImg = isGroup ? (obj.items || []).some(x => x.type === 'image') : obj.t === 'image';
+    toast(isGroup ? n + '件を受信しました' : (hasImg ? '画像を受信しました 📷' : 'テキストを受信しました'), 'ok');
   }
 }
 
-// ---- DB保存 ----
-async function saveToDb(roomId, type, data) {
-  await sb.from('clips').insert({ room_id: roomId, type, data });
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  await sb.from('clips').delete().eq('room_id', roomId).lt('created_at', oneHourAgo);
+// ---- DB保存（暗号文のみ・保持は短時間） ----
+async function saveToDb(roomId, blob) {
+  await sb.from('clips').insert({ room_id: roomId, type: 'enc', data: blob });
+  const cutoff = new Date(Date.now() - RETENTION_MS).toISOString();
+  await sb.from('clips').delete().eq('room_id', roomId).lt('created_at', cutoff);
 }
 
 function copyCode() {
@@ -438,6 +538,14 @@ function copyCode() {
 function newCode() {
   if (currentRoom) { toast('先に切断してください', 'err'); return; }
   document.getElementById('room-input').value = randomCode();
+}
+function copyPass() {
+  navigator.clipboard.writeText(document.getElementById('pass-input').value.trim());
+  toast('あいことばをコピーしました', 'ok');
+}
+function newPass() {
+  if (currentRoom) { toast('先に切断してください', 'err'); return; }
+  document.getElementById('pass-input').value = randomPass();
 }
 
 // ---- PC用ペースト ----
@@ -610,27 +718,30 @@ function onDirectInput() {
   send.disabled = !(pendingItems.length && currentRoom);
 }
 
-// ---- 送信（複数まとめて） ----
+// ---- 送信（複数まとめて／暗号化して送る） ----
 async function sendContent() {
   if (!channel || !currentRoom) { toast('接続されていません', 'err'); return; }
+  if (!cryptoKey) { toast('あいことばが未設定です', 'err'); return; }
   if (!pendingItems.length) { toast('送信するデータがありません', 'err'); return; }
   const batch = pendingItems.map(it => ({ type: it.type, data: it.data }));
   document.getElementById('btn-send').disabled = true;
   const id = uid();
-  const ts = new Date().toISOString();
-  if (batch.length === 1) {
-    const it = batch[0];
-    const payload = { id, type: it.type, data: it.data, ts };
-    try { await channel.send({ type: 'broadcast', event: 'clip', payload }); } catch (e) { /* 続行 */ }
-    await saveToDb(currentRoom, it.type, it.data);
-    addMessage({ key: 'rt:' + id, type: it.type, data: it.data, ts: Date.now(), mine: true });
-  } else {
-    // 複数はまとめて1件（グループ）として送信・保存
-    const payload = { id, type: 'group', items: batch, ts };
-    try { await channel.send({ type: 'broadcast', event: 'clip', payload }); } catch (e) { /* 続行 */ }
-    await saveToDb(currentRoom, 'group', JSON.stringify(batch));
-    addMessage({ key: 'rt:' + id, type: 'group', items: batch, ts: Date.now(), mine: true });
-  }
+  const tsIso = new Date().toISOString();
+  // 暗号化する平文オブジェクト（単体 or グループ）
+  const obj = batch.length === 1
+    ? { id, ts: tsIso, t: batch[0].type, d: batch[0].data }
+    : { id, ts: tsIso, t: 'group', items: batch };
+  let blob;
+  try { blob = await encryptObj(obj); }
+  catch (e) { toast('暗号化に失敗しました', 'err'); document.getElementById('btn-send').disabled = false; return; }
+
+  try { await channel.send({ type: 'broadcast', event: 'clip', payload: { enc: blob } }); } catch (e) { /* 続行 */ }
+  await saveToDb(currentRoom, blob);
+
+  // 自分の送信もローカルのタイムラインへ（keyは共通のidベース→再取得しても重複しない）
+  addMessage(buildMsgFromObj(obj, { mine: true }));
+  persistHist();
+
   toast(batch.length > 1 ? batch.length + '件をまとめて送信しました ✓' : '送信しました ✓', 'ok');
   clearContent();
   if (document.getElementById('pane-text').style.display !== 'none') {
@@ -666,7 +777,7 @@ function renderAt(index, msg) {
 
 function updateMeta() {
   document.getElementById('timeline-meta').textContent =
-    messages.length ? messages.length + '件（過去1時間）' : '';
+    messages.length ? messages.length + '件（この端末に保存）' : '';
   const dl = document.getElementById('btn-dl-all');
   if (dl) dl.style.display = messages.some(m => msgImages(m).length > 0) ? '' : 'none';
 }
@@ -775,6 +886,7 @@ function buildItem(m, autoOpen = false) {
     const idx = messages.indexOf(m);
     if (idx > -1) { messages.splice(idx, 1); seen.delete(m.key); }
     if (messages.length === 0) renderAll(); else updateMeta();
+    persistHist();
   }));
   body.appendChild(actions);
 
@@ -820,6 +932,7 @@ function mkBtn(label, cls, fn) {
 function clearView() {
   messages = []; seen = new Set();
   renderAll();
+  persistHist();
 }
 
 async function copyImage(src) {
@@ -860,11 +973,14 @@ async function downloadAllImages() {
 
 async function leaveRoom() {
   if (!currentRoom) return;
-  await sb.from('clips').delete().eq('room_id', currentRoom);
+  const room = currentRoom;
+  await sb.from('clips').delete().eq('room_id', room);
   if (channel) { await channel.unsubscribe(); channel = null; }
-  currentRoom = null;
   roomStore.removeItem(SS_ROOM);
-  setStatus('waiting', '相手と同じ番号を入力して「接続」してください');
+  roomStore.removeItem(histKey(room)); // 端末内のローカル履歴も削除
+  currentRoom = null;
+  cryptoKey = null;
+  setStatus('waiting', '相手と同じ番号・あいことばで「接続」してください');
   document.getElementById('btn-leave').style.display = 'none';
   document.getElementById('timeline-tools').style.display = 'none';
   messages = []; seen = new Set();
