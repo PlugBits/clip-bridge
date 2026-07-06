@@ -87,11 +87,27 @@
 
   #paste-trap { position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
-  #preview-wrap { display: none; margin-top: 10px; }
-  #preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border); display: none; }
-  #preview-text { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-all; max-height: 100px; overflow-y: auto; display: none; }
   .send-row { display: flex; gap: 8px; margin-top: 10px; }
   .send-row .btn-primary { flex: 1; }
+
+  /* 画像の容量（画質）セレクタ */
+  .quality-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .quality-label { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .seg { display: flex; flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
+  .seg-btn { flex: 1; border: none; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; padding: 7px 4px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .seg-btn.active { background: var(--accent); color: #fff; }
+
+  /* 添付一覧 */
+  #pending-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  #pending-list:empty { display: none; }
+  .pending-item { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+  .pending-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+  .pending-thumb.ic { display: flex; align-items: center; justify-content: center; background: var(--surface); font-size: 18px; }
+  .pending-meta { flex: 1; min-width: 0; }
+  .pending-name { font-size: 13px; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .pending-size { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .pending-remove { border: none; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
+  .pending-remove:hover { color: var(--red); background: rgba(240,68,68,0.1); }
 
   #direct-input { width: 100%; min-height: 90px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 14px; color: var(--text); resize: vertical; outline: none; font-family: var(--font); line-height: 1.6; }
   #direct-input:focus { border-color: var(--accent); }
@@ -99,7 +115,7 @@
   /* タイムライン */
   .timeline-tools { display: flex; flex-direction: column; align-items: stretch; gap: 6px; margin-bottom: 12px; }
   .btn-refresh { width: 100%; padding: 14px; font-size: 15px; }
-  .timeline-tools .btn-sm { align-self: flex-end; }
+  .timeline-subtools { display: flex; gap: 6px; justify-content: flex-end; }
   .receive-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 28px 20px; }
 
   .msg-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; animation: slideIn 0.2s ease; }
@@ -181,16 +197,24 @@
       ondrop="onDrop(event)">
       <div class="drop-icon">📤</div>
       <div class="drop-hint" id="drop-hint"><strong>クリック → Ctrl+V</strong> または画像をドロップ</div>
-      <div class="drop-hint-sub">画像・テキスト対応</div>
+      <div class="drop-hint-sub">画像・テキスト対応・複数可</div>
     </div>
+    <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="onFilePick(event)">
+    <button class="btn btn-ghost" id="btn-pick" style="width:100%;margin-top:8px" onclick="document.getElementById('file-input').click()">🖼️ 画像を選択（複数可）</button>
   </div>
   <div id="pane-text" style="display:none">
     <textarea id="direct-input" placeholder="ここに直接入力..." oninput="onDirectInput()"></textarea>
   </div>
-  <div id="preview-wrap">
-    <img id="preview-img">
-    <div id="preview-text"></div>
+  <!-- 画像の容量（画質）3段階 -->
+  <div class="quality-row" id="quality-row">
+    <span class="quality-label">画像の容量</span>
+    <div class="seg" id="seg-quality">
+      <button class="seg-btn" data-q="light" onclick="setQuality('light')">軽量</button>
+      <button class="seg-btn active" data-q="standard" onclick="setQuality('standard')">標準</button>
+      <button class="seg-btn" data-q="original" onclick="setQuality('original')">原寸</button>
+    </div>
   </div>
+  <div id="pending-list"></div>
   <div class="send-row">
     <button class="btn btn-primary" id="btn-send" onclick="sendContent()" disabled>送信</button>
     <button class="btn btn-ghost" onclick="clearContent()">クリア</button>
@@ -208,7 +232,10 @@
   </div>
   <div class="timeline-tools" id="timeline-tools" style="display:none">
     <button class="btn btn-primary btn-refresh" onclick="reloadTimeline()">🔄 履歴を更新</button>
-    <button class="btn btn-ghost btn-sm" onclick="clearView()">表示をクリア</button>
+    <div class="timeline-subtools">
+      <button class="btn btn-ghost btn-sm" id="btn-dl-all" onclick="downloadAllImages()" style="display:none">⬇️ 画像を全てDL</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearView()">表示をクリア</button>
+    </div>
   </div>
   <div id="message-list">
     <div class="receive-empty">接続すると、送受信した内容がここに新しい順で表示されます</div>
@@ -234,7 +261,15 @@ const AUTO_OPEN_MS = 6000;
 
 let channel = null;
 let currentRoom = null;
-let pendingData = null;
+let pendingItems = [];       // 送信待ちの添付（複数可）{ type, data, orig? }
+let quality = 'standard';    // 画像の容量: light / standard / original
+
+// 画像の容量プリセット（長辺の上限px と JPEG品質）
+const QUALITY = {
+  light:    { max: 900,  q: 0.55 },
+  standard: { max: 1600, q: 0.80 },
+  original: { max: 0,    q: 0 }   // 無圧縮（原寸）
+};
 
 // タイムラインの単一データソース（新しい順で表示）
 let messages = [];          // { key, type, data, ts(ms), mine }
@@ -262,14 +297,14 @@ window.addEventListener('load', () => {
       if (item.type.startsWith('image/')) {
         e.preventDefault();
         const reader = new FileReader();
-        reader.onload = (ev) => { setPreview('image', ev.target.result); e.target.value = ''; };
+        reader.onload = (ev) => { addPendingImage(ev.target.result); e.target.value = ''; };
         reader.readAsDataURL(item.getAsFile());
         return;
       }
     }
     setTimeout(() => {
       const val = e.target.value;
-      if (val.trim()) { setPreview('text', val); e.target.value = ''; }
+      if (val.trim()) { addPendingText(val); e.target.value = ''; }
     }, 50);
   });
 
@@ -312,7 +347,7 @@ async function joinRoom(forceRoomId) {
   channel.subscribe((status) => {
     if (status === 'SUBSCRIBED') {
       setStatus('online', 'ルーム ' + roomId + ' に接続中');
-      if (pendingData) document.getElementById('btn-send').disabled = false;
+      if (pendingItems.length) document.getElementById('btn-send').disabled = false;
       document.getElementById('btn-leave').style.display = '';
       document.getElementById('timeline-tools').style.display = 'flex';
       toast('接続しました ✓', 'ok');
@@ -401,16 +436,18 @@ function newCode() {
 const pasteTrap = document.getElementById('paste-trap');
 pasteTrap.addEventListener('paste', (e) => {
   e.preventDefault();
+  let added = false;
   for (const item of e.clipboardData.items) {
     if (item.type.startsWith('image/')) {
       const reader = new FileReader();
-      reader.onload = (ev) => setPreview('image', ev.target.result);
+      reader.onload = (ev) => addPendingImage(ev.target.result);
       reader.readAsDataURL(item.getAsFile());
-      return;
+      added = true;
     }
   }
+  if (added) return;
   const text = e.clipboardData.getData('text');
-  if (text) setPreview('text', text);
+  if (text) addPendingText(text);
   else toast('テキストか画像をコピーしてペーストしてください', 'err');
 });
 
@@ -420,7 +457,7 @@ function focusPasteTrap() {
   document.getElementById('drop-hint').innerHTML = '<strong>Ctrl+V を押してください</strong>';
   pasteTrap.onblur = () => {
     document.getElementById('drop-zone').classList.remove('active');
-    if (!pendingData) document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
+    if (!pendingItems.length) document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
   };
 }
 
@@ -429,72 +466,157 @@ function onDragLeave()  { document.getElementById('drop-zone').classList.remove(
 function onDrop(e) {
   e.preventDefault();
   document.getElementById('drop-zone').classList.remove('active');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = (ev) => setPreview('image', ev.target.result);
-    reader.readAsDataURL(file);
+  const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+  if (files.length) {
+    files.forEach(f => { const r = new FileReader(); r.onload = ev => addPendingImage(ev.target.result); r.readAsDataURL(f); });
   } else {
     const text = e.dataTransfer.getData('text');
-    if (text) setPreview('text', text);
+    if (text) addPendingText(text);
   }
 }
 
-// ---- プレビュー ----
-function setPreview(type, data) {
-  pendingData = { type, data };
+// ファイル選択（複数可）
+function onFilePick(e) {
+  const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+  if (!files.length) { toast('画像ファイルを選んでください', 'err'); }
+  files.forEach(f => { const r = new FileReader(); r.onload = ev => addPendingImage(ev.target.result); r.readAsDataURL(f); });
+  e.target.value = '';
+}
+
+// ---- 画像の圧縮（容量3段階） ----
+function loadImg(src) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+}
+function b64Bytes(dataURL) {
+  const i = dataURL.indexOf(',');
+  const b64 = i >= 0 ? dataURL.slice(i + 1) : dataURL;
+  return Math.floor(b64.length * 3 / 4);
+}
+async function compressImage(src, level) {
+  const cfg = QUALITY[level] || QUALITY.standard;
+  if (level === 'original' || !cfg.max) return src;
+  try {
+    const img = await loadImg(src);
+    let w = img.naturalWidth, h = img.naturalHeight;
+    const longest = Math.max(w, h);
+    if (longest > cfg.max) { const s = cfg.max / longest; w = Math.round(w * s); h = Math.round(h * s); }
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); // JPEGは透過非対応のため白背景
+    ctx.drawImage(img, 0, 0, w, h);
+    const out = c.toDataURL('image/jpeg', cfg.q);
+    // スクショ等で逆に大きくなる場合は元画像を使う
+    return b64Bytes(out) < b64Bytes(src) ? out : src;
+  } catch { return src; }
+}
+
+// dataURL のおおよそのバイト数を表示用に整形
+function fmtSize(dataURL) {
+  const bytes = b64Bytes(dataURL);
+  return bytes >= 1024 * 1024 ? (bytes / 1024 / 1024).toFixed(1) + ' MB' : Math.max(1, Math.round(bytes / 1024)) + ' KB';
+}
+
+// ---- 添付キュー ----
+async function addPendingImage(src) {
+  const data = await compressImage(src, quality);
+  pendingItems.push({ type: 'image', orig: src, data });
+  renderPending();
+}
+function addPendingText(text) {
+  pendingItems.push({ type: 'text', data: text });
+  renderPending();
+}
+
+function renderPending() {
+  const wrap = document.getElementById('pending-list');
+  wrap.innerHTML = '';
+  pendingItems.forEach((it, idx) => {
+    const row = document.createElement('div'); row.className = 'pending-item';
+    if (it.type === 'image') {
+      const t = document.createElement('img'); t.className = 'pending-thumb'; t.src = it.data; row.appendChild(t);
+      const meta = document.createElement('div'); meta.className = 'pending-meta';
+      const nm = document.createElement('div'); nm.className = 'pending-name'; nm.textContent = '画像 ' + (idx + 1);
+      const sz = document.createElement('div'); sz.className = 'pending-size'; sz.textContent = fmtSize(it.data);
+      meta.appendChild(nm); meta.appendChild(sz); row.appendChild(meta);
+    } else {
+      const t = document.createElement('div'); t.className = 'pending-thumb ic'; t.textContent = '📝'; row.appendChild(t);
+      const meta = document.createElement('div'); meta.className = 'pending-meta';
+      const nm = document.createElement('div'); nm.className = 'pending-name'; nm.textContent = it.data.split('\n').join(' ');
+      meta.appendChild(nm); row.appendChild(meta);
+    }
+    const rm = document.createElement('button'); rm.className = 'pending-remove'; rm.textContent = '×';
+    rm.onclick = () => { pendingItems.splice(idx, 1); renderPending(); };
+    row.appendChild(rm);
+    wrap.appendChild(row);
+  });
+
+  const n = pendingItems.length;
   if (!isIOS) {
-    document.getElementById('drop-zone').classList.add('has-content');
-    document.getElementById('drop-hint').innerHTML = type === 'image' ? '📷 画像をペースト済み' : '📝 テキストをペースト済み';
+    document.getElementById('drop-zone').classList.toggle('has-content', n > 0);
+    document.getElementById('drop-hint').innerHTML = n > 0
+      ? '📎 ' + n + '件を添付済み'
+      : '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
   }
-  document.getElementById('preview-wrap').style.display = '';
-  document.getElementById('preview-img').style.display  = type === 'image' ? 'block' : 'none';
-  document.getElementById('preview-text').style.display = type === 'text'  ? 'block' : 'none';
-  if (type === 'image') document.getElementById('preview-img').src = data;
-  else document.getElementById('preview-text').textContent = data;
-  document.getElementById('btn-send').disabled = !currentRoom;
+  const send = document.getElementById('btn-send');
+  send.textContent = n > 1 ? '送信 (' + n + ')' : '送信';
+  send.disabled = !(n > 0 && currentRoom);
+}
+
+// 容量プリセットの切り替え（添付済み画像も再圧縮）
+async function setQuality(q) {
+  quality = q;
+  document.querySelectorAll('#seg-quality .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.q === q));
+  for (const it of pendingItems) {
+    if (it.type === 'image' && it.orig) it.data = await compressImage(it.orig, q);
+  }
+  renderPending();
 }
 
 function clearContent() {
-  pendingData = null;
+  pendingItems = [];
   if (!isIOS) {
     document.getElementById('drop-zone').classList.remove('has-content', 'active');
     document.getElementById('drop-hint').innerHTML = '<strong>クリック → Ctrl+V</strong> または画像をドロップ';
   }
-  document.getElementById('preview-wrap').style.display = 'none';
-  document.getElementById('preview-img').src = '';
-  document.getElementById('preview-text').textContent = '';
-  document.getElementById('btn-send').disabled = true;
+  document.getElementById('pending-list').innerHTML = '';
+  const send = document.getElementById('btn-send');
+  send.textContent = '送信'; send.disabled = true;
 }
 
 // ---- タブ ----
 function switchTab(tab) {
   document.getElementById('pane-paste').style.display = tab === 'paste' ? '' : 'none';
   document.getElementById('pane-text').style.display  = tab === 'text'  ? '' : 'none';
+  document.getElementById('quality-row').style.display = tab === 'paste' ? '' : 'none';
   document.getElementById('tab-paste').className = 'btn ' + (tab === 'paste' ? 'btn-primary' : 'btn-ghost');
   document.getElementById('tab-text').className  = 'btn ' + (tab === 'text'  ? 'btn-primary' : 'btn-ghost');
-  if (tab === 'text') clearContent();
-  if (tab === 'paste') { document.getElementById('direct-input').value = ''; pendingData = null; document.getElementById('btn-send').disabled = true; }
+  document.getElementById('direct-input').value = '';
+  clearContent();
 }
 
 function onDirectInput() {
   const val = document.getElementById('direct-input').value;
-  pendingData = val.trim() ? { type: 'text', data: val } : null;
-  document.getElementById('btn-send').disabled = !(pendingData && currentRoom);
+  pendingItems = val.trim() ? [{ type: 'text', data: val }] : [];
+  const send = document.getElementById('btn-send');
+  send.textContent = '送信';
+  send.disabled = !(pendingItems.length && currentRoom);
 }
 
-// ---- 送信 ----
+// ---- 送信（複数まとめて） ----
 async function sendContent() {
   if (!channel || !currentRoom) { toast('接続されていません', 'err'); return; }
-  if (!pendingData) { toast('送信するデータがありません', 'err'); return; }
-  const id = uid();
-  const ts = new Date().toISOString();
-  const payload = { id, type: pendingData.type, data: pendingData.data, ts };
-  await channel.send({ type: 'broadcast', event: 'clip', payload });
-  await saveToDb(currentRoom, pendingData.type, pendingData.data);
-  // 自分の送信もタイムラインに追加
-  addMessage({ key: 'rt:' + id, type: pendingData.type, data: pendingData.data, ts: Date.now(), mine: true });
-  toast('送信しました ✓', 'ok');
+  if (!pendingItems.length) { toast('送信するデータがありません', 'err'); return; }
+  const batch = pendingItems.slice();
+  document.getElementById('btn-send').disabled = true;
+  for (const it of batch) {
+    const id = uid();
+    const ts = new Date().toISOString();
+    const payload = { id, type: it.type, data: it.data, ts };
+    try { await channel.send({ type: 'broadcast', event: 'clip', payload }); } catch (e) { /* 続行 */ }
+    await saveToDb(currentRoom, it.type, it.data);
+    addMessage({ key: 'rt:' + id, type: it.type, data: it.data, ts: Date.now(), mine: true });
+  }
+  toast(batch.length > 1 ? batch.length + '件を送信しました ✓' : '送信しました ✓', 'ok');
   clearContent();
   if (document.getElementById('pane-text').style.display !== 'none') {
     document.getElementById('direct-input').value = '';
@@ -530,6 +652,8 @@ function renderAt(index, msg) {
 function updateMeta() {
   document.getElementById('timeline-meta').textContent =
     messages.length ? messages.length + '件（過去1時間）' : '';
+  const dl = document.getElementById('btn-dl-all');
+  if (dl) dl.style.display = messages.some(m => m.type === 'image') ? '' : 'none';
 }
 
 function fmtTime(ms) {
@@ -671,8 +795,21 @@ async function copyImage(src) {
   } catch { toast('コピー不可。ダウンロードを使ってください', 'err'); }
 }
 
-function downloadImage(src) {
-  const a = document.createElement('a'); a.href = src; a.download = 'clip-' + Date.now() + '.png'; a.click();
+function downloadImage(src, idx = 0) {
+  const ext = src.startsWith('data:image/jpeg') ? 'jpg' : 'png';
+  const a = document.createElement('a'); a.href = src;
+  a.download = 'clip-' + Date.now() + '-' + idx + '.' + ext; a.click();
+}
+
+// タイムライン上の画像を1枚ずつまとめてダウンロード（ZIPにはしない）
+async function downloadAllImages() {
+  const imgs = messages.filter(m => m.type === 'image');
+  if (!imgs.length) { toast('画像がありません', 'err'); return; }
+  toast(imgs.length + '枚をダウンロードします', 'ok');
+  for (let i = 0; i < imgs.length; i++) {
+    downloadImage(imgs[i].data, i);
+    await new Promise(r => setTimeout(r, 350)); // 連続DLがブロックされないよう間隔
+  }
 }
 
 async function leaveRoom() {
