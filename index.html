@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClipBridge</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -76,6 +77,8 @@
   .pass-input::placeholder { color: var(--muted); font-size: 14px; font-weight: 400; letter-spacing: 0; }
   .code-actions { display: flex; gap: 6px; margin-top: 7px; }
   .code-actions .btn { flex: 1; }
+  #qr-wrap { display: flex; justify-content: center; }
+  #qr-wrap canvas { background: #fff; padding: 10px; border-radius: 8px; }
 
   /* 接続済みの折りたたみチップ */
   .conn-toggle { margin-left: auto; display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--text); cursor: pointer; transition: border-color 0.15s; }
@@ -227,6 +230,11 @@
         <button class="btn btn-ghost btn-sm" onclick="newPass()">別のあいことば</button>
       </div>
     </div>
+    <button class="btn btn-ghost" id="btn-qr" onclick="toggleQR()" style="width:100%;margin-bottom:8px">📱 QRコードで共有</button>
+    <div id="qr-block" class="code-block" style="display:none">
+      <div class="code-label">もう一方の端末のカメラでこのQRコードを読み取ると、同じ番号・あいことばで自動接続します</div>
+      <div id="qr-wrap"></div>
+    </div>
     <button class="btn btn-primary" id="btn-join" onclick="joinRoom()" style="width:100%">接続</button>
     <button class="btn btn-danger" id="btn-leave" onclick="leaveRoom()" style="width:100%;display:none;margin-top:8px">切断して履歴を削除</button>
     <div class="status-bar">
@@ -308,10 +316,11 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-// タブ単位のセッション。リロードでは維持され、タブを閉じると破棄される。
+// localStorageで永続化。iOSのタブ破棄・リロード後も部屋とあいことばを保持し、
+// 「切断して履歴を削除」で明示的に消すまで残る（タブを閉じても消えない点に注意）。
 const SS_ROOM = 'clipbridge_room';
 const SS_PASS = 'clipbridge_pass';
-const roomStore = window.sessionStorage;
+const roomStore = window.localStorage;
 // 受信時のみ、最新の1件を数秒だけ開いた状態にしておく
 const AUTO_OPEN_MS = 6000;
 // サーバー側の暗号バッファ保持時間（取りこぼし回収用）
@@ -389,7 +398,7 @@ function buildMsgFromObj(obj, extra) {
     : Object.assign(base, { type: obj.t, data: obj.d });
 }
 
-// ---- ローカル履歴（端末内・sessionStorage） ----
+// ---- ローカル履歴（端末内・localStorage） ----
 function histKey(room) { return 'clipbridge_hist_' + room; }
 function persistHist() {
   if (!currentRoom) return;
@@ -413,10 +422,17 @@ function loadHist(room) {
 // ---- 初期化 ----
 window.addEventListener('load', () => {
   applyThemeIcon();
+
+  // QRコード経由（#room=...&pass=...）で開かれた場合は最優先で自動接続する
+  const hashParams = new URLSearchParams(location.hash.slice(1));
+  const hashRoom = (hashParams.get('room') || '').trim();
+  const hashPass = (hashParams.get('pass') || '').trim();
+  const fromQR = /^\d{4}$/.test(hashRoom) && !!hashPass;
+
   const saved = roomStore.getItem(SS_ROOM);
   const savedPass = roomStore.getItem(SS_PASS);
-  document.getElementById('room-input').value = (saved && /^\d{4}$/.test(saved)) ? saved : randomCode();
-  document.getElementById('pass-input').value = savedPass || randomPass();
+  document.getElementById('room-input').value = fromQR ? hashRoom : ((saved && /^\d{4}$/.test(saved)) ? saved : randomCode());
+  document.getElementById('pass-input').value = fromQR ? hashPass : (savedPass || randomPass());
 
   if (isIOS) {
     document.getElementById('ios-paste-area').style.display = 'block';
@@ -439,7 +455,11 @@ window.addEventListener('load', () => {
     }, 50);
   });
 
-  if (saved && /^\d{4}$/.test(saved) && savedPass) {
+  if (fromQR) {
+    history.replaceState(null, '', location.pathname + location.search); // ハッシュにあいことばを残さない
+    setStatus('waiting', 'QRコードのルームに接続中...');
+    joinRoom(hashRoom);
+  } else if (saved && /^\d{4}$/.test(saved) && savedPass) {
     setStatus('waiting', '前回のルームに再接続中...');
     joinRoom(saved);
   } else {
@@ -621,6 +641,7 @@ function copyCode() {
 function newCode() {
   if (currentRoom) { toast('先に切断してください', 'err'); return; }
   document.getElementById('room-input').value = randomCode();
+  hideQR(); // 番号が変わったQRを表示したままにしないよう閉じる（簡易対応）
 }
 function copyPass() {
   navigator.clipboard.writeText(document.getElementById('pass-input').value.trim());
@@ -629,6 +650,38 @@ function copyPass() {
 function newPass() {
   if (currentRoom) { toast('先に切断してください', 'err'); return; }
   document.getElementById('pass-input').value = randomPass();
+  hideQR(); // あいことばが変わったQRを表示したままにしないよう閉じる（簡易対応）
+}
+
+// ---- QRコードで部屋を共有 ----
+// フラグメント（#room=...&pass=...）に載せる。クエリ文字列にすると
+// サーバーのアクセスログ等にあいことばが残りかねないため、あえてハッシュを使う。
+function qrURL() {
+  const room = document.getElementById('room-input').value.trim();
+  const pass = document.getElementById('pass-input').value.trim();
+  return location.origin + location.pathname +
+    '#room=' + encodeURIComponent(room) + '&pass=' + encodeURIComponent(pass);
+}
+function hideQR() {
+  document.getElementById('qr-block').style.display = 'none';
+  document.getElementById('btn-qr').textContent = '📱 QRコードで共有';
+}
+function toggleQR() {
+  const block = document.getElementById('qr-block');
+  if (block.style.display !== 'none') { hideQR(); return; }
+  const room = document.getElementById('room-input').value.trim();
+  const pass = document.getElementById('pass-input').value.trim();
+  if (!/^\d{4}$/.test(room) || !pass) { toast('4桁の番号とあいことばを入力してください', 'err'); return; }
+  const wrap = document.getElementById('qr-wrap');
+  wrap.innerHTML = '';
+  if (!window.QRCode) { toast('QRコードを生成できませんでした', 'err'); return; }
+  const canvas = document.createElement('canvas');
+  QRCode.toCanvas(canvas, qrURL(), { width: 200, margin: 1 }, (err) => {
+    if (err) { toast('QRコードを生成できませんでした', 'err'); return; }
+    wrap.appendChild(canvas);
+    block.style.display = '';
+    document.getElementById('btn-qr').textContent = 'QRコードを閉じる';
+  });
 }
 
 // ---- PC用ペースト ----
