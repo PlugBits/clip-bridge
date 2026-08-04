@@ -1094,14 +1094,64 @@ async function copyImage(src) {
   } catch { toast('コピー不可。ダウンロードを使ってください', 'err'); }
 }
 
+// data:URL を同期的に Blob に変換（ユーザー操作のコンテキストを維持するため await を挟まない）
+function dataURLtoBlob(dataURL) {
+  const m = dataURL.match(/^data:([^;,]+)?(;base64)?,/);
+  const mime = (m && m[1]) || 'image/png';
+  const b64 = dataURL.slice(m[0].length);
+  const bin = atob(b64);
+  const u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return new Blob([u8], { type: mime });
+}
+
 function downloadImage(src, idx = 0) {
-  const ext = src.startsWith('data:image/jpeg') ? 'jpg' : 'png';
-  const a = document.createElement('a'); a.href = src;
-  a.download = 'clip-' + Date.now() + '-' + idx + '.' + ext; a.click();
+  let blob;
+  try { blob = dataURLtoBlob(src); }
+  catch { toast('ダウンロードに失敗しました', 'err'); return; }
+  const ext = blob.type === 'image/jpeg' ? 'jpg' : 'png';
+  const filename = 'clip-' + Date.now() + '-' + idx + '.' + ext;
+
+  if (isIOS) {
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] }).catch((err) => {
+        if (err && err.name === 'AbortError') return; // ユーザーがキャンセル
+        saveViaAnchor(blob, filename); // 共有に失敗した場合はフォールバック
+      });
+      return;
+    }
+  }
+  saveViaAnchor(blob, filename);
+}
+
+// Blob URL を使ったアンカー経由のダウンロード（非iOS向け、iOSの共有不可時のフォールバック）
+function saveViaAnchor(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000); // 即時revokeはDLを中断させることがある
 }
 
 // 画像を1枚ずつ順番にダウンロード（ZIPにはしない）
 async function downloadImages(list) {
+  if (isIOS) {
+    try {
+      const files = list.map((src, i) => {
+        const blob = dataURLtoBlob(src);
+        const ext = blob.type === 'image/jpeg' ? 'jpg' : 'png';
+        return new File([blob], 'clip-' + Date.now() + '-' + i + '.' + ext, { type: blob.type });
+      });
+      if (navigator.canShare && navigator.canShare({ files })) {
+        await navigator.share({ files });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') return; // ユーザーがキャンセル
+      // 失敗時は下の順次ダウンロードにフォールバック
+    }
+  }
   for (let i = 0; i < list.length; i++) {
     downloadImage(list[i], i);
     await new Promise(r => setTimeout(r, 350)); // 連続DLがブロックされないよう間隔
